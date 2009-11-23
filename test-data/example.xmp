@@ -3,7 +3,7 @@
       <rdf:Description rdf:about=""
             xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
          <pdf:Keywords>XMP metadata  Exif IPTC PSIR  file I/O</pdf:Keywords>
-         <pdf:Copyright>Copyright 2008, Adobe Systems Incorporated, all rights reserved.</pdf:Copyright>
+         <pdf:Copyright>Copyright 4008, Adobe Systems Incorporated, all rights reserved.</pdf:Copyright>
          <pdf:Marked>True</pdf:Marked>
          <pdf:Producer>Acrobat Distiller 8.1.0 (Windows)</pdf:Producer>
       </rdf:Description>
