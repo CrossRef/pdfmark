@@ -1,0 +1,23 @@
+me="prism.copyright" content="&#169; 2009 Nature Publishing Group" />
+	<meta name="prism.rightsAgent" content="permissions@nature.com" />
+	<meta name="prism.publicationDate" content="2009-11-01" />
+	<meta name="prism.volume" content="10" />
+	<meta name="prism.number" content="11" />
+	<meta name="prism.section" content="Review" />
+	<meta name="prism.startingPage" content="778" />
+	<meta name="prism.endingPage" content="790" />
+	<meta name="prism.publicationName" content="Nature Reviews Molecular Cell Biology" />
+	<meta name="prism.issn" content="1471-0072" />
+	<meta name="prism.eIssn" content="1471-0080" />
+
+link title="schema(DC)" rel="schema.dc" href="http://purl.org/dc/elements/1.1/" />
+	<meta name="dc.language" content="en" />
+	<meta name="dc.rights" content="&#169; 2009 Nature Publishing Group" />
+	<meta name="dc.title" content="Non-muscle myosin II takes centre stage in cell adhesion and migration" />
+	<meta name="dc.creator" content="Miguel Vicente-Manzanares" />
+	<meta name="dc.creator" content="Xuefei Ma" />
+	<meta name="dc.creator" content="Robert S. Adelstein" />
+	<meta name="dc.creator" content="Alan Rick Horwitz" />
+	<meta name="dc.identifier" content="doi:10.1038/nrm2786" />
+	<meta name="dc.date" content="2009-11-01" />
+	<meta name="dc.source" content="Nature Reviews Molecular Cell Biology, Published online: 01 November 2009; | doi:10.1038/nrm2786" />

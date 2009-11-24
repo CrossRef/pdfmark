@@ -1,0 +1,62 @@
+{
+  "xsi:schemaLocation": "http:\/\/www.crossref.org\/xschema\/1.1 http:\/\/www.crossref.org\/schema\/unixref1.1.xsd http:\/\/www.crossref.org\/xschema\/1.0 http:\/\/www.crossref.org\/schema\/unixref1.0.xsd",
+  "doi_record": {
+    "timestamp": "2008-10-09 12:12:14.0",
+    "crossref": {
+      "journal": {
+        "journal_article": {
+          "doi_data": {
+            "resource": "http:\/\/hdl.handle.net\/2027\/spo.3336451.0009.101",
+            "doi": "10.3998\/3336451.0009.101"
+          },
+          "publication_date": {
+            "media_type": "print",
+            "month": "01",
+            "day": "31",
+            "year": "2006"
+          },
+          "contributors": [
+            {
+              "sequence": "first",
+              "contributor_role": "author",
+              "given_name": "Geoffrey",
+              "surname": "Bilder"
+            }
+          ],
+          "publication_type": "full_text",
+          "titles": {
+            "title": "In Google We Trust?"
+          }
+        },
+        "journal_metadata": {
+          "doi_data": {
+            "resource": "http:\/\/www.journalofelectronicpublishing.org\/",
+            "doi": "10.3998\/jep"
+          },
+          "abbrev_title": "J Electron Publ",
+          "issn": {
+            "media_type": "electronic",
+            "content": "10802711"
+          },
+          "full_title": "Journal of Electronic Publishing"
+        },
+        "journal_issue": {
+          "publication_date": {
+            "media_type": "print",
+            "month": "01",
+            "day": "31",
+            "year": "2006"
+          },
+          "journal_volume": {
+            "volume": "9"
+          },
+          "issue": "1"
+        }
+      }
+    },
+    "owner": "10.3998",
+    "xmlns": "http:\/\/www.crossref.org\/xschema\/1.0"
+  },
+  "xmlns:xsi": "http:\/\/www.w3.org\/2001\/XMLSchema-instance",
+  "xmlns": "http:\/\/www.crossref.org\/xschema\/1.1"
+}

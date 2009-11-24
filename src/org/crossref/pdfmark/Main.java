@@ -32,6 +32,8 @@ import com.lowagie.text.pdf.PdfStamper;
 
 public class Main {
 	
+	private MetadataGrabber grabber = new MetadataGrabber();
+	
 	public static void printUsage() {
 		System.err.println("Usage: MarkMunge" +
 				" [{-f, --force-overwrite}]" +
@@ -43,6 +45,10 @@ public class Main {
 	}
 
 	public static void main(String[] args) {
+		new Main(args);
+	}
+	
+	public Main(String[] args) {
 		CmdLineParser parser = new CmdLineParser();
 		CmdLineParser.Option provideXmpOp = parser.addStringOption('p', "xmp-file");
 		CmdLineParser.Option overwriteOp = parser.addBooleanOption('f', "force-overwrite");
@@ -58,11 +64,15 @@ public class Main {
 		}
 		
 		String optionalXmpFile = (String) parser.getOptionValue(provideXmpOp);
+		String outputDir = (String) parser.getOptionValue(outputOp);
+		String explicitDoi = (String) parser.getOptionValue(doiOp);
 		boolean forceOverwrite = parser.getOptionValue(overwriteOp) == null ? false 
 				                   : (Boolean) parser.getOptionValue(overwriteOp);
-		String outputDir = (String) parser.getOptionValue(outputOp);
+		boolean searchForDoi = parser.getOptionValue(searchOp) == null ? false
+								   : (Boolean) parser.getOptionValue(searchOp);
 		
-		byte[] forAllXmpData = null;
+		
+		byte[] optionalXmpData = null;
 		
 		if (!optionalXmpFile.equals("")) {
 			/* We will take XMP data from a file. */
@@ -76,7 +86,7 @@ public class Main {
 				System.exit(2);
 			}
 			
-			forAllXmpData = xmpFile.data;
+			optionalXmpData = xmpFile.data;
 		}
 		
 		/* Now we're ready to merge our imported or generated XMP data with what
@@ -104,9 +114,25 @@ public class Main {
 				PdfReader reader = new PdfReader(fileIn);
 				PdfStamper stamper = new PdfStamper(reader, fileOut);
 				
-				if (forAllXmpData != null) {
+				if (optionalXmpData != null) {
 					// TODO Is meta data XMP? Is it empty? What to do if it is not XMP?
-					stamper.setXmpMetadata(mergeXmp(reader.getMetadata(), forAllXmpData));
+					stamper.setXmpMetadata(mergeXmp(reader.getMetadata(), optionalXmpData));
+				}
+				
+				if (explicitDoi != null) {
+					/* Let's make a request for the explicit doi. */
+					grabber.grabOne(explicitDoi, new MetadataGrabber.Handler() {
+						@Override
+						public void onMetadata(String doi, String[] titles, String[] creators,
+								String publishedDate) {
+							System.out.println("Got title = " + titles[0]);
+						}
+						
+						@Override
+						public void onFailure(String doi, int code, String msg) {
+							
+						}
+					});
 				}
 				
 				stamper.close();
@@ -123,7 +149,9 @@ public class Main {
 
 	private static byte[] mergeXmp(byte[] left, byte[] right) {
 		try {
-			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+			builderFactory.setNamespaceAware(true);
+			DocumentBuilder builder = builderFactory.newDocumentBuilder();
 			
 			Document leftDoc = builder.parse(new ByteArrayInputStream(left));
 			Document rightDoc = builder.parse(new ByteArrayInputStream(right));
@@ -155,5 +183,4 @@ public class Main {
 		
 		return null;
 	}
-	
 }
