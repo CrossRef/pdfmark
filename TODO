@@ -1,0 +1,3 @@
+- Check that merging XMP is working.
+- Get metadata from api.labs.crossref.org.
+- Convert metadata in crossref deposit files to DC/PRISM in XMP.
