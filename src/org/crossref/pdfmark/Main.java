@@ -6,6 +6,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.crossref.pdfmark.XmpUtils.XmpException;
+
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
@@ -28,6 +30,10 @@ public class Main {
 
 	public static void main(String[] args) {
 		new Main(args);
+	}
+	
+	private void shutDown() {
+		grabber.shutDown();
 	}
 	
 	public Main(String[] args) {
@@ -97,33 +103,8 @@ public class Main {
 						+ "' already exists.\nTry using -f (force overwrite).");
 			}
 			
-			if (explicitDoi != null) {
-				/* Let's make a request for the explicit DOI. */
-				grabber.grabOne(explicitDoi, new MetadataGrabber.Handler() {
-					@Override
-					public void onMetadata(String doi, String[] titles, String[] creators,
-							String publishedDate) {
-						System.out.println("Got metadata, titles " + titles.length 
-								+ " creators " + creators.length);
-						// TODO
-//						resolvedXmpData = new byte[0];
-					}
-					
-					@Override
-					public void onFailure(String doi, int code, String msg) {
-						if (code == MetadataGrabber.CRUMMY_XML_CODE) {
-							exitWithError(2, "Failed to parse XML metadata because of:\n" 
-									+ code + ": " + msg);
-						} else {
-							System.err.println();
-							exitWithError(2, "Failed to retreive metadata because of:\n" 
-									+ code + ": " + msg);
-						}
-					}
-				});
-				
-				System.out.print("Grabbing metadata for '" + explicitDoi + "'");
-				waitForGrabber();
+			if (!explicitDoi.equals("")) {
+				resolvedXmpData = getXmpForDoi(explicitDoi);
 			}
 			
 			try {
@@ -134,15 +115,17 @@ public class Main {
 				
 				byte[] merged = reader.getMetadata();
 				
-				if (optionalXmpData != null) {
-					// TODO Is meta data XMP? Is it empty? What to do if it is 
-					// not XMP?
-					merged = XmpUtils.mergeXmp(merged, optionalXmpData);
-				}
+//				if (optionalXmpData != null) {
+//					// TODO Is meta data XMP? Is it empty? What to do if it is 
+//					// not XMP?
+//					merged = XmpUtils.mergeXmp(merged, optionalXmpData);
+//				}
+//				
+//				if (resolvedXmpData != null) {
+//					merged = XmpUtils.mergeXmp(merged, resolvedXmpData);
+//				}
 				
-				if (resolvedXmpData != null) {
-					merged = XmpUtils.mergeXmp(merged, resolvedXmpData);
-				}
+				merged = resolvedXmpData;
 				
 				stamper.setXmpMetadata(merged);
 				
@@ -154,8 +137,35 @@ public class Main {
 			} catch (DocumentException e) {
 				exitWithError(2, "Error: Couldn't handle '" + pdfFilePath 
 						+ "' because of:\n" + e);
+			} catch (XmpException e) {
+				exitWithError(2, "Error: Couldn't handle '" + pdfFilePath
+						+ "' because of:\n" + e);
 			}
 		}
+		
+		shutDown();
+	}
+	
+	private byte[] getXmpForDoi(String doi) {
+		MarkBuilder builder = new MarkBuilder() {
+			@Override
+			public void onFailure(String doi, int code, String msg) {
+				if (code == MetadataGrabber.CRUMMY_XML_CODE) {
+					exitWithError(2, "Failed to parse metadata XML because of:\n" 
+							+ code + ": " + msg);
+				} else {
+					System.err.println();
+					exitWithError(2, "Failed to retreive metadata because of:\n" 
+							+ code + ": " + msg);
+				}
+			}
+		};
+		grabber.grabOne(doi, builder);
+		
+		System.out.print("Grabbing metadata for '" + doi + "'");
+		waitForGrabber();
+		
+		return builder.getXmpData();
 	}
 	
 	private void waitForGrabber() {
@@ -175,10 +185,9 @@ public class Main {
 	}
 	
 	private void exitWithError(int code, String error) {
+		shutDown();
 		System.err.println();
 		System.err.println(error);
 		System.exit(code);
 	}
-
-	
 }

@@ -21,7 +21,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -51,6 +50,8 @@ public class MetadataGrabber {
 	
 	private boolean processing;
 	
+	private boolean terminated;
+	
 	private Object monitor = new Object();
 	
 	private class RequestInfo {
@@ -66,7 +67,7 @@ public class MetadataGrabber {
 		
 		try {
 			DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
-			domFactory.setNamespaceAware(true);
+			domFactory.setNamespaceAware(false);
 			builder = domFactory.newDocumentBuilder();
 		} catch (ParserConfigurationException e) {
 			System.err.println("Error: Can't create an XML parser.");
@@ -85,7 +86,7 @@ public class MetadataGrabber {
 			MONTH_EXPR = xpath.compile("//month");
 			YEAR_EXPR = xpath.compile("//year");
 		} catch (XPathExpressionException e) {
-			System.err.println("Application has malformed XPath expressions.");
+			System.err.println("Error: Malformed XPath expressions.");
 			System.err.println(e);
 			System.exit(2);
 		}
@@ -96,9 +97,7 @@ public class MetadataGrabber {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				boolean terminate = false;
-				
-				while (!terminate) {
+				while (!terminated) {
 					while (!requests.isEmpty()) {
 						dealWithRequest(requests.remove());
 					}
@@ -114,6 +113,13 @@ public class MetadataGrabber {
 				}
 			}
 		}).start();
+	}
+	
+	public void shutDown() {
+		terminated = true;
+		synchronized (monitor) {
+			monitor.notifyAll();
+		}
 	}
 	
 	private void dealWithRequest(RequestInfo req) {

@@ -27,7 +27,7 @@ public class XmpUtils {
 	}
 	
 	/**
-	 * Merge the <RDF> section of two XML documents. All <rdf:description>
+	 * Merge the <rdf:RDF> section of two XML documents. All <rdf:description>
 	 * elements from left and right are maintained in a new XML document.
 	 */
 	public static byte[] mergeXmp(byte[] left, byte[] right) 
