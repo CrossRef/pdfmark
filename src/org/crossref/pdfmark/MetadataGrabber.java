@@ -76,7 +76,8 @@ public class MetadataGrabber {
 		
 		try {
 			TITLES_EXPR = xpath.compile("//titles/title");
-			AUTHORS_EXPR = xpath.compile("//contributors/person_name[@contributor_role='author']");
+			AUTHORS_EXPR = xpath.compile("//contributors/person_name"
+					+ "[@contributor_role='author']");
 			GIVEN_NAME_EXPR = xpath.compile("//given_name");
 			SURNAME_EXPR = xpath.compile("//surname");
 			DATE_EXPR = xpath.compile("//publication_date");
@@ -146,41 +147,44 @@ public class MetadataGrabber {
 		return processing;
 	}
 	
-	private static String[] getTitles(Document doc) throws XPathExpressionException {
-		NodeList titles = (NodeList) TITLES_EXPR.evaluate(doc, XPathConstants.NODESET);
+	private static String[] getTitles(Document doc) 
+			throws XPathExpressionException {
+		NodeList ts = (NodeList) TITLES_EXPR.evaluate(doc, XPathConstants.NODESET);
 		
-		String[] titleStrs = new String[titles.getLength()];
+		String[] strings = new String[ts.getLength()];
 		
-		for (int i=0; i<titles.getLength(); i++) {
-			titleStrs[i] = titles.item(i).getNodeValue();
+		for (int i=0; i<ts.getLength(); i++) {
+			strings[i] = ts.item(i).getNodeValue();
 		}
 		
-		return titleStrs;
+		return strings;
 	}
 	
-	private static String[] getContributors(Document doc) throws XPathExpressionException {
-		NodeList authors = (NodeList) AUTHORS_EXPR.evaluate(doc, XPathConstants.NODESET);
+	private static String[] getContributors(Document doc) 
+			throws XPathExpressionException {
+		NodeList s = (NodeList) AUTHORS_EXPR.evaluate(doc, XPathConstants.NODESET);
 		
-		String[] authorNames = new String[authors.getLength()];
+		String[] names = new String[s.getLength()];
 		
-		for (int i=0; i<authors.getLength(); i++) {
-			Node author = authors.item(i);
-			Node givenNames = (Node) GIVEN_NAME_EXPR.evaluate(author, XPathConstants.NODE);
-			Node surname = (Node) SURNAME_EXPR.evaluate(author, XPathConstants.NODE);
-			authorNames[i] = givenNames + " " + surname;
+		for (int i=0; i<s.getLength(); i++) {
+			Node a = s.item(i);
+			Node given = (Node) GIVEN_NAME_EXPR.evaluate(a, XPathConstants.NODE);
+			Node surname = (Node) SURNAME_EXPR.evaluate(a, XPathConstants.NODE);
+			names[i] = given + " " + surname;
 		}
 		
-		return authorNames;
+		return names;
 	}
 	
-	private static String getDate(Document doc) throws XPathExpressionException {
+	private static String getDate(Document doc) 
+			throws XPathExpressionException {
 		String date = "";
-		Node publicationDate = (Node) DATE_EXPR.evaluate(doc, XPathConstants.NODE);
+		Node pubDate = (Node) DATE_EXPR.evaluate(doc, XPathConstants.NODE);
 		
-		if (publicationDate != null) {
-			Node year = (Node) YEAR_EXPR.evaluate(publicationDate, XPathConstants.NODE);
-			Node month = (Node) MONTH_EXPR.evaluate(publicationDate, XPathConstants.NODE);
-			Node day = (Node) DAY_EXPR.evaluate(publicationDate, XPathConstants.NODE);
+		if (pubDate != null) {
+			Node year = (Node) YEAR_EXPR.evaluate(pubDate, XPathConstants.NODE);
+			Node month = (Node) MONTH_EXPR.evaluate(pubDate, XPathConstants.NODE);
+			Node day = (Node) DAY_EXPR.evaluate(pubDate, XPathConstants.NODE);
 			
 			// TODO What if month and day are not two digits strings?
 			date = year.getNodeValue();

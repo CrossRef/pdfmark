@@ -45,12 +45,12 @@ public class Main {
 			System.exit(2);
 		}
 		
-		String optionalXmpFile = (String) 
+		String optionalXmpPath = (String) 
 				                 parser.getOptionValue(provideXmpOp, "");
 		String outputDir       = (String) 
-		 			             parser.getOptionValue(outputOp);
+		 			             parser.getOptionValue(outputOp, "");
 		String explicitDoi     = (String) 
-		                         parser.getOptionValue(doiOp);
+		                         parser.getOptionValue(doiOp, "");
 		boolean forceOverwrite = (Boolean) 
 		                         parser.getOptionValue(overwriteOp, Boolean.FALSE);
 		boolean searchForDoi   = (Boolean) 
@@ -62,9 +62,9 @@ public class Main {
 		
 		byte[] optionalXmpData = null;
 		
-		if (!optionalXmpFile.equals("")) {
+		if (!optionalXmpPath.equals("")) {
 			/* We will take XMP data from a file. */
-			FileInfo xmpFile = FileInfo.readFileFully(optionalXmpFile);
+			FileInfo xmpFile = FileInfo.readFileFully(optionalXmpPath);
 			if (xmpFile.missing) {
 				exitWithError(2, "Error: File '" + xmpFile.path 
 						+ "' does not exist.");
