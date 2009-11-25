@@ -48,7 +48,9 @@ public class PrismSchema extends XmpSchema {
 	public static final String VOLUME = "prism:volume";
 	
 	public PrismSchema() {
-		super(DEFAULT_XPATH_URI);
+		super("xmlns:" 
+	               + DEFAULT_XPATH_ID 
+	               + "=\"" + DEFAULT_XPATH_URI + "\"");
 	}
 
 }

@@ -32,6 +32,7 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 			
 			writer.close();
 			xmpData = bout.toByteArray();
+			System.out.println(new String(xmpData));
 		} catch (IOException e) {
 			
 		}
