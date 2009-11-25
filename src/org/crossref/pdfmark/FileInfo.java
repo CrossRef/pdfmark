@@ -1,9 +1,9 @@
 package org.crossref.pdfmark;
+
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
 
 public class FileInfo {
 	public String path;

@@ -1,14 +1,10 @@
 package org.crossref.pdfmark;
 import jargs.gnu.CmdLineParser;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -35,7 +31,7 @@ public class Main {
 	private MetadataGrabber grabber = new MetadataGrabber();
 	
 	public static void printUsage() {
-		System.err.println("Usage: MarkMunge" +
+		System.err.println("Usage: pdfmark" +
 				" [{-f, --force-overwrite}]" +
 				" [{-p, --xmp-file} xmp_file]" +
 				" [{-o, --output-dir} output_dir] " +
@@ -71,19 +67,16 @@ public class Main {
 		boolean searchForDoi = parser.getOptionValue(searchOp) == null ? false
 								   : (Boolean) parser.getOptionValue(searchOp);
 		
-		
 		byte[] optionalXmpData = null;
 		
 		if (!optionalXmpFile.equals("")) {
 			/* We will take XMP data from a file. */
 			FileInfo xmpFile = FileInfo.readFileFully(optionalXmpFile);
 			if (xmpFile.missing) {
-				System.err.println("Error: File '" + xmpFile.path + "' does not exist.");
-				System.exit(2);
+				exitWithError(2, "Error: File '" + xmpFile.path + "' does not exist.");
 			} else if (xmpFile.error != null) {
-				System.err.println("Error: Could not read '" + xmpFile.path + "' because of:");
-				System.err.println(xmpFile.error);
-				System.exit(2);
+				exitWithError(2, "Error: Could not read '" + xmpFile.path 
+						+ "' because of:\n" + xmpFile.error);
 			}
 			
 			optionalXmpData = xmpFile.data;
@@ -99,13 +92,12 @@ public class Main {
 			File outputFile = new File(pdfFilePath + ".out");
 			
 			if (!pdfFile.exists()) {
-				System.err.println("Error: File '" + pdfFilePath + "' does not exist.");
-				continue;
+				exitWithError(2, "Error: File '" + pdfFilePath + "' does not exist.");
 			}
 			
 			if (outputFile.exists() && !forceOverwrite) {
-				System.err.println("Error: File '" + outputPath + "' already exists.");
-				System.err.println("Try using -f (force overwrite).");
+				exitWithError(2, "Error: File '" + outputPath 
+						+ "' already exists.\nTry using -f (force overwrite).");
 			}
 				
 			try {
@@ -115,36 +107,67 @@ public class Main {
 				PdfStamper stamper = new PdfStamper(reader, fileOut);
 				
 				if (optionalXmpData != null) {
-					// TODO Is meta data XMP? Is it empty? What to do if it is not XMP?
-					stamper.setXmpMetadata(mergeXmp(reader.getMetadata(), optionalXmpData));
+					// TODO Is meta data XMP? Is it empty? What to do if it is 
+					// not XMP?
+					byte[] merged = mergeXmp(reader.getMetadata(),
+							 				 optionalXmpData);
+					stamper.setXmpMetadata(merged);
 				}
 				
 				if (explicitDoi != null) {
-					/* Let's make a request for the explicit doi. */
+					/* Let's make a request for the explicit DOI. */
 					grabber.grabOne(explicitDoi, new MetadataGrabber.Handler() {
 						@Override
 						public void onMetadata(String doi, String[] titles, String[] creators,
 								String publishedDate) {
-							System.out.println("Got title = " + titles[0]);
+							System.out.println("Got metadata, titles " + titles.length 
+									+ " creators " + creators.length);
 						}
 						
 						@Override
 						public void onFailure(String doi, int code, String msg) {
-							
+							if (code == MetadataGrabber.CRUMMY_XML_CODE) {
+								exitWithError(2, "Failed to parse XML metadata because of:\n" 
+										+ code + ": " + msg);
+							} else {
+								System.err.println();
+								exitWithError(2, "Failed to retreive metadata because of:\n" 
+										+ code + ": " + msg);
+							}
 						}
 					});
 				}
 				
+				System.out.print("Grabbing metadata for DOI '" + explicitDoi + "'");
+
+				// TODO Move print into separate thread and do networking in main thread.
+				while (grabber.isProcessing()) {
+					System.out.print(".");
+					System.out.flush();
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+					}
+				}
+				
+				System.out.println();
+				
 				stamper.close();
 				reader.close();
 			} catch (IOException e) {
-				System.err.println("Error: Couldn't handle '" + pdfFilePath + "' because of:");
-				System.err.println(e);
+				exitWithError(2, "Error: Couldn't handle '" + pdfFilePath 
+						+ "' because of:\n" + e);
 			} catch (DocumentException e) {
-				System.err.println("Error: Couldn't handle '" + pdfFilePath + "' because of:");
-				System.err.println(e);
+				exitWithError(2, "Error: Couldn't handle '" + pdfFilePath 
+						+ "' because of:\n" + e);
 			}
 		}
+	}
+	
+	private void exitWithError(int code, String error) {
+		System.err.println();
+		System.err.println(error);
+		System.exit(code);
 	}
 
 	private static byte[] mergeXmp(byte[] left, byte[] right) {
@@ -158,7 +181,8 @@ public class Main {
 			
 			Node leftMetaParent = leftDoc.getElementsByTagNameNS("rdf", "RDF").item(0);
 			
-			NodeList rightMetaNodes = rightDoc.getElementsByTagNameNS("rdf", "RDF").item(0).getChildNodes();
+			NodeList rightMetaNodes = rightDoc.getElementsByTagNameNS("rdf", "RDF").item(0)
+									.getChildNodes();
 			
 			for (int i=0; i<rightMetaNodes.getLength(); i++) {
 				Node copy = leftDoc.importNode(rightMetaNodes.item(i), true);
