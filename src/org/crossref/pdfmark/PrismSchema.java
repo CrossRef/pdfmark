@@ -27,10 +27,10 @@ public class PrismSchema extends XmpSchema {
 	public static final String BASED_ON = "prism:basedOn";
 	public static final String IS_CORRECTION_OF = "prism:isCorrectionOf";
 	public static final String IS_FORMAT_OF = "prism:isFormatOf";
-	public static final String isPartOf = "prism:isPartOf";
-	public static final String isReferencedBy = "prism:isReferencedBy";
-	public static final String isTranslationOf = "prism:isTranslationOf";
-	public static final String isRequiredBy = "prism:isRequiredBy";
+	public static final String IS_PART_OF = "prism:isPartOf";
+	public static final String IS_REFERENCED_BY = "prism:isReferencedBy";
+	public static final String IS_TRANSLATION_OF = "prism:isTranslationOf";
+	public static final String IS_REQUIRED_BY = "prism:isRequiredBy";
 	public static final String IS_VERSION_OF = "prism:isVersionOf";
 	public static final String MODIFICATION_TIME = "prism:modificationTime";
 	public static final String NUMBER = "prism:number";
