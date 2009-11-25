@@ -1,26 +1,10 @@
 package org.crossref.pdfmark;
 import jargs.gnu.CmdLineParser;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.PdfReader;
@@ -61,13 +45,20 @@ public class Main {
 			System.exit(2);
 		}
 		
-		String optionalXmpFile = (String) parser.getOptionValue(provideXmpOp);
-		String outputDir = (String) parser.getOptionValue(outputOp);
-		String explicitDoi = (String) parser.getOptionValue(doiOp);
-		boolean forceOverwrite = parser.getOptionValue(overwriteOp) == null ? false 
-				                   : (Boolean) parser.getOptionValue(overwriteOp);
-		boolean searchForDoi = parser.getOptionValue(searchOp) == null ? false
-								   : (Boolean) parser.getOptionValue(searchOp);
+		String optionalXmpFile = (String) 
+				                 parser.getOptionValue(provideXmpOp, "");
+		String outputDir       = (String) 
+		 			             parser.getOptionValue(outputOp);
+		String explicitDoi     = (String) 
+		                         parser.getOptionValue(doiOp);
+		boolean forceOverwrite = (Boolean) 
+		                         parser.getOptionValue(overwriteOp, Boolean.FALSE);
+		boolean searchForDoi   = (Boolean) 
+		                         parser.getOptionValue(searchOp, Boolean.FALSE);
+		
+		if (!explicitDoi.equals("") && searchForDoi) {
+			exitWithError(2, "-d and -s are mutually exclusive options.");
+		}
 		
 		byte[] optionalXmpData = null;
 		
@@ -94,68 +85,66 @@ public class Main {
 			File pdfFile = new File(pdfFilePath);
 			File outputFile = new File(pdfFilePath + ".out");
 			
+			byte[] resolvedXmpData = null;
+			
 			if (!pdfFile.exists()) {
-				exitWithError(2, "Error: File '" + pdfFilePath + "' does not exist.");
+				exitWithError(2, "Error: File '" + pdfFilePath 
+						+ "' does not exist.");
 			}
 			
 			if (outputFile.exists() && !forceOverwrite) {
 				exitWithError(2, "Error: File '" + outputPath 
 						+ "' already exists.\nTry using -f (force overwrite).");
 			}
+			
+			if (explicitDoi != null) {
+				/* Let's make a request for the explicit DOI. */
+				grabber.grabOne(explicitDoi, new MetadataGrabber.Handler() {
+					@Override
+					public void onMetadata(String doi, String[] titles, String[] creators,
+							String publishedDate) {
+						System.out.println("Got metadata, titles " + titles.length 
+								+ " creators " + creators.length);
+						// TODO
+//						resolvedXmpData = new byte[0];
+					}
+					
+					@Override
+					public void onFailure(String doi, int code, String msg) {
+						if (code == MetadataGrabber.CRUMMY_XML_CODE) {
+							exitWithError(2, "Failed to parse XML metadata because of:\n" 
+									+ code + ": " + msg);
+						} else {
+							System.err.println();
+							exitWithError(2, "Failed to retreive metadata because of:\n" 
+									+ code + ": " + msg);
+						}
+					}
+				});
 				
+				System.out.print("Grabbing metadata for '" + explicitDoi + "'");
+				waitForGrabber();
+			}
+			
 			try {
 				FileInputStream fileIn = new FileInputStream(pdfFile);
 				FileOutputStream fileOut = new FileOutputStream(outputFile);
 				PdfReader reader = new PdfReader(fileIn);
 				PdfStamper stamper = new PdfStamper(reader, fileOut);
 				
+				byte[] merged = reader.getMetadata();
+				
 				if (optionalXmpData != null) {
 					// TODO Is meta data XMP? Is it empty? What to do if it is 
 					// not XMP?
-					byte[] merged = XmpUtils.mergeXmp(reader.getMetadata(),
-							 				          optionalXmpData);
-					stamper.setXmpMetadata(merged);
+					merged = XmpUtils.mergeXmp(merged, optionalXmpData);
 				}
 				
-				if (explicitDoi != null) {
-					/* Let's make a request for the explicit DOI. */
-					grabber.grabOne(explicitDoi, new MetadataGrabber.Handler() {
-						@Override
-						public void onMetadata(String doi, String[] titles, String[] creators,
-								String publishedDate) {
-							System.out.println("Got metadata, titles " + titles.length 
-									+ " creators " + creators.length);
-						}
-						
-						@Override
-						public void onFailure(String doi, int code, String msg) {
-							if (code == MetadataGrabber.CRUMMY_XML_CODE) {
-								exitWithError(2, "Failed to parse XML metadata because of:\n" 
-										+ code + ": " + msg);
-							} else {
-								System.err.println();
-								exitWithError(2, "Failed to retreive metadata because of:\n" 
-										+ code + ": " + msg);
-							}
-						}
-					});
+				if (resolvedXmpData != null) {
+					merged = XmpUtils.mergeXmp(merged, resolvedXmpData);
 				}
 				
-				System.out.print("Grabbing metadata for DOI '" + explicitDoi + "'");
-
-				// TODO Move print into separate thread and do networking 
-				// in main thread, and remove this junk - it will slow us
-				// down for batches.
-				while (grabber.isProcessing()) {
-					System.out.print(".");
-					System.out.flush();
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-					}
-				}
-				
-				System.out.println();
+				stamper.setXmpMetadata(merged);
 				
 				stamper.close();
 				reader.close();
@@ -167,6 +156,22 @@ public class Main {
 						+ "' because of:\n" + e);
 			}
 		}
+	}
+	
+	private void waitForGrabber() {
+		// TODO Move print into separate thread and do networking 
+		// in main thread, and remove this junk - it will slow us
+		// down for batches.
+		while (grabber.isProcessing()) {
+			System.out.print(".");
+			System.out.flush();
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+			}
+		}
+		
+		System.out.println();
 	}
 	
 	private void exitWithError(int code, String error) {
