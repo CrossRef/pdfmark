@@ -26,6 +26,8 @@ import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
 
+import static jargs.gnu.CmdLineParser.Option;
+
 public class Main {
 	
 	private MetadataGrabber grabber = new MetadataGrabber();
@@ -46,11 +48,11 @@ public class Main {
 	
 	public Main(String[] args) {
 		CmdLineParser parser = new CmdLineParser();
-		CmdLineParser.Option provideXmpOp = parser.addStringOption('p', "xmp-file");
-		CmdLineParser.Option overwriteOp = parser.addBooleanOption('f', "force-overwrite");
-		CmdLineParser.Option outputOp = parser.addStringOption('o', "output-dir");
-		CmdLineParser.Option doiOp = parser.addStringOption('d', "doi");
-		CmdLineParser.Option searchOp = parser.addBooleanOption('s', "search-for-doi");
+		Option provideXmpOp = parser.addStringOption('p', "xmp-file");
+		Option overwriteOp = parser.addBooleanOption('f', "force-overwrite");
+		Option outputOp = parser.addStringOption('o', "output-dir");
+		Option doiOp = parser.addStringOption('d', "doi");
+		Option searchOp = parser.addBooleanOption('s', "search-for-doi");
 		
 		try {
 			parser.parse(args);
@@ -73,7 +75,8 @@ public class Main {
 			/* We will take XMP data from a file. */
 			FileInfo xmpFile = FileInfo.readFileFully(optionalXmpFile);
 			if (xmpFile.missing) {
-				exitWithError(2, "Error: File '" + xmpFile.path + "' does not exist.");
+				exitWithError(2, "Error: File '" + xmpFile.path 
+						+ "' does not exist.");
 			} else if (xmpFile.error != null) {
 				exitWithError(2, "Error: Could not read '" + xmpFile.path 
 						+ "' because of:\n" + xmpFile.error);
@@ -109,8 +112,8 @@ public class Main {
 				if (optionalXmpData != null) {
 					// TODO Is meta data XMP? Is it empty? What to do if it is 
 					// not XMP?
-					byte[] merged = mergeXmp(reader.getMetadata(),
-							 				 optionalXmpData);
+					byte[] merged = XmpUtils.mergeXmp(reader.getMetadata(),
+							 				          optionalXmpData);
 					stamper.setXmpMetadata(merged);
 				}
 				
@@ -140,7 +143,9 @@ public class Main {
 				
 				System.out.print("Grabbing metadata for DOI '" + explicitDoi + "'");
 
-				// TODO Move print into separate thread and do networking in main thread.
+				// TODO Move print into separate thread and do networking 
+				// in main thread, and remove this junk - it will slow us
+				// down for batches.
 				while (grabber.isProcessing()) {
 					System.out.print(".");
 					System.out.flush();
@@ -170,41 +175,5 @@ public class Main {
 		System.exit(code);
 	}
 
-	private static byte[] mergeXmp(byte[] left, byte[] right) {
-		try {
-			DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-			builderFactory.setNamespaceAware(true);
-			DocumentBuilder builder = builderFactory.newDocumentBuilder();
-			
-			Document leftDoc = builder.parse(new ByteArrayInputStream(left));
-			Document rightDoc = builder.parse(new ByteArrayInputStream(right));
-			
-			Node leftMetaParent = leftDoc.getElementsByTagNameNS("rdf", "RDF").item(0);
-			
-			NodeList rightMetaNodes = rightDoc.getElementsByTagNameNS("rdf", "RDF").item(0)
-									.getChildNodes();
-			
-			for (int i=0; i<rightMetaNodes.getLength(); i++) {
-				Node copy = leftDoc.importNode(rightMetaNodes.item(i), true);
-				leftMetaParent.appendChild(copy);
-			}
-			
-			Transformer trans = TransformerFactory.newInstance().newTransformer();
-			ByteArrayOutputStream bout = new ByteArrayOutputStream();
-			
-			trans.transform(new DOMSource(leftDoc), new StreamResult(bout));
-			
-			return bout.toByteArray();
-		} catch (TransformerException e) {
-			System.err.println(e);
-		} catch (IOException e) {
-			System.err.println(e);
-		} catch (SAXException e) {
-			System.err.println(e);
-		} catch (ParserConfigurationException e)  {
-			System.err.println(e);
-		}
-		
-		return null;
-	}
+	
 }

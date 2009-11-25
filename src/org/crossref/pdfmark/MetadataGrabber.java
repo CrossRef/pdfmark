@@ -21,6 +21,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -59,7 +60,7 @@ public class MetadataGrabber {
 	}
 	
 	public MetadataGrabber() {
-		/* Set up some compiled xpath queries. */
+		/* Set up some compiled XPath queries. */
 		XPathFactory factory = XPathFactory.newInstance();
 		XPath xpath = factory.newXPath();
 		
@@ -118,7 +119,6 @@ public class MetadataGrabber {
 		try {
 			HttpResponse sponse = client.execute(req.request);
 			HttpEntity entity = sponse.getEntity();
-			System.out.println(sponse.getStatusLine().getStatusCode());
 			if (entity != null) {
 			    Document doc = builder.parse(entity.getContent());
 			    req.handler.onMetadata(req.doi, 
@@ -136,7 +136,7 @@ public class MetadataGrabber {
 		} catch (IOException e) {
 			req.handler.onFailure(req.doi, CLIENT_EXCEPTION_CODE, e.toString());
 		} catch (SAXException e) {
-			req.handler.onFailure(req.doi,CRUMMY_XML_CODE, e.toString());
+			req.handler.onFailure(req.doi, CRUMMY_XML_CODE, e.toString());
 		} catch (XPathExpressionException e) {
 			req.handler.onFailure(req.doi, CRUMMY_XML_CODE, e.toString());
 		}
