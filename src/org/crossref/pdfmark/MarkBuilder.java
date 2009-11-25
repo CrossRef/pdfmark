@@ -3,6 +3,8 @@ package org.crossref.pdfmark;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import javax.xml.xpath.XPathExpressionException;
+
 import com.lowagie.text.xml.xmp.DublinCoreSchema;
 import com.lowagie.text.xml.xmp.XmpArray;
 import com.lowagie.text.xml.xmp.XmpSchema;
@@ -13,28 +15,31 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 	private byte[] xmpData;
 	
 	@Override
-	public void onMetadata(String doi, String[] titles, String[] authors,
-			String publishedDate) {
+	public void onMetadata(CrossRefMetadata md) {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		
 		try {
 			XmpWriter writer = new XmpWriter(bout);
 			
 			XmpSchema dc = new DublinCoreSchema();
-			addToSchema(dc, DublinCoreSchema.CREATOR, authors);
-//			addToSchema(dc, DublinCoreSchema.TITLE, titles);
-			dc.setProperty(DublinCoreSchema.DATE, publishedDate);
+			addToSchema(dc, DublinCoreSchema.CREATOR, md.getContributors());
+//			addToSchema(dc, DublinCoreSchema.TITLE, md.getTitles());
+			dc.setProperty(DublinCoreSchema.DATE, md.getDate());
 			writer.addRdfDescription(dc);
 			
 			XmpSchema prism = new PrismSchema();
-			prism.setProperty(PrismSchema.PUBLICATION_TIME, publishedDate);
+			prism.setProperty(PrismSchema.PUBLICATION_TIME, md.getDate());
 			writer.addRdfDescription(prism);
 			
 			writer.close();
 			xmpData = bout.toByteArray();
-			System.out.println(new String(xmpData));
-		} catch (IOException e) {
 			
+		} catch (IOException e) {
+			onFailure(md.getDoi(), MetadataGrabber.CLIENT_EXCEPTION_CODE,
+					  e.toString());
+		} catch (XPathExpressionException e) {
+			onFailure(md.getDoi(), MetadataGrabber.CLIENT_EXCEPTION_CODE,
+					  e.toString());
 		}
 	}
 	
