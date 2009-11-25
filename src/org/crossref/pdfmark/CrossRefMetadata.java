@@ -23,6 +23,10 @@ public class CrossRefMetadata {
 	
 	private Document doc;
 	
+	private String[] titles, contributors;
+	
+	private String publishedDate;
+	
 	static {
 		XPathFactory factory = XPathFactory.newInstance();
 		XPath xpath = factory.newXPath();
@@ -53,6 +57,10 @@ public class CrossRefMetadata {
 	}
 
 	public String[] getTitles() throws XPathExpressionException {
+		if (titles != null) {
+			return titles;
+		}
+		
 		NodeList ts = (NodeList) TITLES_EXPR.evaluate(doc, XPathConstants.NODESET);
 
 		String[] strings = new String[ts.getLength()];
@@ -61,10 +69,14 @@ public class CrossRefMetadata {
 			strings[i] = ts.item(i).getNodeValue();
 		}
 
-		return strings;
+		return titles = strings;
 	}
 
 	public String[] getContributors() throws XPathExpressionException {
+		if (contributors != null) {
+			return contributors;
+		}
+		
 		NodeList s = (NodeList) AUTHORS_EXPR.evaluate(doc, XPathConstants.NODESET);
 
 		String[] names = new String[s.getLength()];
@@ -76,10 +88,14 @@ public class CrossRefMetadata {
 			names[i] = given + " " + surname;
 		}
 
-		return names;
+		return contributors = names;
 	}
 
 	public String getDate() throws XPathExpressionException {
+		if (publishedDate != null) {
+			return publishedDate;
+		}
+		
 		String date = "";
 		Node pubDate = (Node) DATE_EXPR.evaluate(doc, XPathConstants.NODE);
 
@@ -98,7 +114,7 @@ public class CrossRefMetadata {
 			}
 		}
 
-		return date;
+		return publishedDate = date;
 	}
 
 }
