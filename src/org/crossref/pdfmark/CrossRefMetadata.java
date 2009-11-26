@@ -86,11 +86,11 @@ public class CrossRefMetadata {
 			DAY_EXPR = xpath.compile("//cr:day");
 			MONTH_EXPR = xpath.compile("//cr:month");
 			YEAR_EXPR = xpath.compile("//cr:year");
-			JOURNAL_EXPR = xpath.compile("exists(//cr:journal)");
-			BOOK_EXPR = xpath.compile("exists(//cr:book)");
-			DISSERTATION_EXPR = xpath.compile("exists(//cr:dissertation)");
-			CONFERENCE_EXPR = xpath.compile("exists(//cr:conference)");
-			REPORT_PAPER_EXPR = xpath.compile("exists(//cr:report-paper)");
+			JOURNAL_EXPR = xpath.compile("//cr:journal");
+			BOOK_EXPR = xpath.compile("//cr:book");
+			DISSERTATION_EXPR = xpath.compile("//cr:dissertation");
+			CONFERENCE_EXPR = xpath.compile("//cr:conference");
+			REPORT_PAPER_EXPR = xpath.compile("//cr:report-paper");
 			
 		} catch (XPathExpressionException e) {
 			System.err.println("Error: Malformed XPath expressions.");

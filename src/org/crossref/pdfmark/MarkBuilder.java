@@ -37,10 +37,12 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 			addToSchema(dc, DublinCoreSchema.CREATOR, md.getContributors());
 			addToSchema(dc, DublinCoreSchema.TITLE, md.getTitles());
 			dc.setProperty(DublinCoreSchema.DATE, md.getDate());
+			dc.setProperty(DublinCoreSchema.IDENTIFIER, md.getDoi());
 			writer.addRdfDescription(dc);
 			
 			XmpSchema prism = new Prism21Schema();
 			prism.setProperty(Prism21Schema.PUBLICATION_DATE, md.getDate());
+			prism.setProperty(Prism21Schema.DOI, md.getDoi());
 			writer.addRdfDescription(prism);
 			
 			writer.close();
