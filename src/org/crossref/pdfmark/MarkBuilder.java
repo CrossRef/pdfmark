@@ -27,8 +27,8 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 			dc.setProperty(DublinCoreSchema.DATE, md.getDate());
 			writer.addRdfDescription(dc);
 			
-			XmpSchema prism = new PrismSchema();
-			prism.setProperty(PrismSchema.PUBLICATION_TIME, md.getDate());
+			XmpSchema prism = new Prism21Schema();
+			prism.setProperty(Prism21Schema.PUBLICATION_DATE, md.getDate());
 			writer.addRdfDescription(prism);
 			
 			writer.close();
