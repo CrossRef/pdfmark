@@ -1,5 +1,9 @@
 package org.crossref.pdfmark;
 
+import java.util.Iterator;
+
+import javax.xml.XMLConstants;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -11,6 +15,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class CrossRefMetadata {
+	
+	private static final String NAMESPACE_PREFIX = "cr";
+	private static final String NAMESPACE_URI 
+					= "http://www.crossref.org/xschema/1.0";
 	
 	private static XPathExpression TITLES_EXPR;
 	private static XPathExpression AUTHORS_EXPR;
@@ -30,17 +38,39 @@ public class CrossRefMetadata {
 	static {
 		XPathFactory factory = XPathFactory.newInstance();
 		XPath xpath = factory.newXPath();
+		xpath.setNamespaceContext(new NamespaceContext() {
+			@Override
+			public String getNamespaceURI(String prefix) {
+				if (prefix.equals(NAMESPACE_PREFIX)) {
+					return NAMESPACE_URI;
+				}
+				return XMLConstants.NULL_NS_URI;
+			}
+
+			@Override
+			public String getPrefix(String namespaceURI) {
+				if (namespaceURI.equals(NAMESPACE_URI)) {
+					return NAMESPACE_PREFIX;
+				}
+				return null;
+			}
+
+			@Override
+			public Iterator getPrefixes(String namespaceURI) {
+				return null;
+			}
+		});
 		
 		try {
-			TITLES_EXPR = xpath.compile("//titles/title");
-			AUTHORS_EXPR = xpath.compile("//contributors/person_name"
+			TITLES_EXPR = xpath.compile("//cr:titles/cr:title");
+			AUTHORS_EXPR = xpath.compile("//cr:contributors/cr:person_name"
 					+ "[@contributor_role='author']");
-			GIVEN_NAME_EXPR = xpath.compile("//given_name");
-			SURNAME_EXPR = xpath.compile("//surname");
-			DATE_EXPR = xpath.compile("//publication_date");
-			DAY_EXPR = xpath.compile("//day");
-			MONTH_EXPR = xpath.compile("//month");
-			YEAR_EXPR = xpath.compile("//year");
+			GIVEN_NAME_EXPR = xpath.compile("//cr:given_name");
+			SURNAME_EXPR = xpath.compile("//cr:surname");
+			DATE_EXPR = xpath.compile("//cr:publication_date");
+			DAY_EXPR = xpath.compile("//cr:day");
+			MONTH_EXPR = xpath.compile("//cr:month");
+			YEAR_EXPR = xpath.compile("//cr:year");
 		} catch (XPathExpressionException e) {
 			System.err.println("Error: Malformed XPath expressions.");
 			System.err.println(e);
@@ -66,7 +96,7 @@ public class CrossRefMetadata {
 		String[] strings = new String[ts.getLength()];
 
 		for (int i=0; i<ts.getLength(); i++) {
-			strings[i] = ts.item(i).getNodeValue();
+			strings[i] = ts.item(i).getTextContent();
 		}
 
 		return titles = strings;
@@ -85,7 +115,7 @@ public class CrossRefMetadata {
 			Node a = s.item(i);
 			Node given = (Node) GIVEN_NAME_EXPR.evaluate(a, XPathConstants.NODE);
 			Node surname = (Node) SURNAME_EXPR.evaluate(a, XPathConstants.NODE);
-			names[i] = given + " " + surname;
+			names[i] = given.getTextContent() + " " + surname.getTextContent();
 		}
 
 		return contributors = names;
@@ -105,11 +135,11 @@ public class CrossRefMetadata {
 			Node day = (Node) DAY_EXPR.evaluate(pubDate, XPathConstants.NODE);
 
 			// TODO What if month and day are not two digits strings?
-			date = year.getNodeValue();
+			date = year.getTextContent();
 			if (!month.equals("")) {
-				date += "-" + month.getNodeValue();
+				date += "-" + month.getTextContent();
 				if (!day.equals("")) {
-					date += "-" + day.getNodeValue();
+					date += "-" + day.getTextContent();
 				}
 			}
 		}

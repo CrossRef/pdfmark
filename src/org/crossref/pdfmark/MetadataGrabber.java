@@ -47,7 +47,7 @@ public class MetadataGrabber {
 	public MetadataGrabber() {
 		try {
 			DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
-			domFactory.setNamespaceAware(false);
+			domFactory.setNamespaceAware(true);
 			builder = domFactory.newDocumentBuilder();
 		} catch (ParserConfigurationException e) {
 			System.err.println("Error: Can't create an XML parser.");

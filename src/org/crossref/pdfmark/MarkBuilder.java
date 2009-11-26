@@ -23,7 +23,7 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 			
 			XmpSchema dc = new DublinCoreSchema();
 			addToSchema(dc, DublinCoreSchema.CREATOR, md.getContributors());
-//			addToSchema(dc, DublinCoreSchema.TITLE, md.getTitles());
+			addToSchema(dc, DublinCoreSchema.TITLE, md.getTitles());
 			dc.setProperty(DublinCoreSchema.DATE, md.getDate());
 			writer.addRdfDescription(dc);
 			
