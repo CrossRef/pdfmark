@@ -16,6 +16,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.crossref.pdfmark.unixref.Unixref;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -92,7 +93,7 @@ public class MetadataGrabber {
 			HttpEntity entity = sponse.getEntity();
 			if (entity != null) {
 			    Document doc = builder.parse(entity.getContent());
-			    req.handler.onMetadata(new CrossRefMetadata(doc));
+			    req.handler.onMetadata(new Unixref(doc));
 			} else {
 				StatusLine sl = sponse.getStatusLine();
 				req.handler.onFailure(req.doi, 
@@ -129,7 +130,7 @@ public class MetadataGrabber {
 	}
 	
 	public interface Handler {
-		public void onMetadata(CrossRefMetadata metadata);
+		public void onMetadata(Unixref metadata);
 		public void onFailure(String doi, int code, String msg);
 	}
 

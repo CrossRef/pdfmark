@@ -1,4 +1,4 @@
-package org.crossref.pdfmark;
+package org.crossref.pdfmark.prism;
 
 import com.lowagie.text.xml.xmp.XmpSchema;
 

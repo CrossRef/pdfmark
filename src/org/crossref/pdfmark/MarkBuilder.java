@@ -5,6 +5,10 @@ import java.io.IOException;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.crossref.pdfmark.prism.Prism21Schema;
+import org.crossref.pdfmark.unixref.JournalArticle;
+import org.crossref.pdfmark.unixref.Unixref;
+
 import com.lowagie.text.xml.xmp.DublinCoreSchema;
 import com.lowagie.text.xml.xmp.XmpArray;
 import com.lowagie.text.xml.xmp.XmpSchema;
@@ -15,9 +19,9 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 	private byte[] xmpData;
 	
 	@Override
-	public void onMetadata(CrossRefMetadata md) {
+	public void onMetadata(Unixref md) {
 		try {
-			if (md.getType() != CrossRefMetadata.Type.JOURNAL) {
+			if (md.getType() != Unixref.Type.JOURNAL) {
 				onFailure(md.getDoi(), MetadataGrabber.CRUMMY_XML_CODE,
 						"No journal article metadata for DOI.");
 				return;
@@ -31,17 +35,19 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		
 		try {
+			JournalArticle article = md.getJournal().getArticle();
+			
 			XmpWriter writer = new XmpWriter(bout);
 			
 			XmpSchema dc = new DublinCoreSchema();
-			addToSchema(dc, DublinCoreSchema.CREATOR, md.getContributors());
-			addToSchema(dc, DublinCoreSchema.TITLE, md.getTitles());
-			dc.setProperty(DublinCoreSchema.DATE, md.getDate());
+			addToSchema(dc, DublinCoreSchema.CREATOR, article.getContributors());
+			addToSchema(dc, DublinCoreSchema.TITLE, article.getTitles());
+			dc.setProperty(DublinCoreSchema.DATE, article.getDate());
 			dc.setProperty(DublinCoreSchema.IDENTIFIER, md.getDoi());
 			writer.addRdfDescription(dc);
 			
 			XmpSchema prism = new Prism21Schema();
-			prism.setProperty(Prism21Schema.PUBLICATION_DATE, md.getDate());
+			prism.setProperty(Prism21Schema.PUBLICATION_DATE, article.getDate());
 			prism.setProperty(Prism21Schema.DOI, md.getDoi());
 			writer.addRdfDescription(prism);
 			
