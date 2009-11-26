@@ -9,10 +9,10 @@ A few hours
 =========================================================================
 
 - Rewrite XMP merging.
-- Fill in more of CrossRefMetadata -> add new classes for other types.
 - Fill in more DC/PRISM elements in MarkBuilder.
 - Rewrite MarkBuilder as something more reusable.
 - Add file globbing.
+- Testing using many PDFS from OA publishers.
 
 Involved, hours or days
 =========================================================================
