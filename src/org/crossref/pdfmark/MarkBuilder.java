@@ -16,6 +16,18 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 	
 	@Override
 	public void onMetadata(CrossRefMetadata md) {
+		try {
+			if (md.getType() != CrossRefMetadata.Type.JOURNAL) {
+				onFailure(md.getDoi(), MetadataGrabber.CRUMMY_XML_CODE,
+						"No journal article metadata for DOI.");
+				return;
+			}
+		} catch (XPathExpressionException e) {
+			onFailure(md.getDoi(), MetadataGrabber.CRUMMY_XML_CODE,
+					"Could not determine if DOI has any journal article metadata.");
+			return;
+		}
+		
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		
 		try {

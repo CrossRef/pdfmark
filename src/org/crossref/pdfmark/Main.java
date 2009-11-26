@@ -20,7 +20,7 @@ public class Main {
 	
 	public static void printUsage() {
 		System.err.println("Usage: pdfmark" +
-				" [{-f, --force-overwrite}]" +
+				" [{-f, --force}]" +
 				" [{-p, --xmp-file} xmp_file]" +
 				" [{-o, --output-dir} output_dir] " +
 				" [{-d, --doi} doi]" + 
@@ -39,7 +39,7 @@ public class Main {
 	public Main(String[] args) {
 		CmdLineParser parser = new CmdLineParser();
 		Option provideXmpOp = parser.addStringOption('p', "xmp-file");
-		Option overwriteOp = parser.addBooleanOption('f', "force-overwrite");
+		Option overwriteOp = parser.addBooleanOption('f', "force");
 		Option outputOp = parser.addStringOption('o', "output-dir");
 		Option doiOp = parser.addStringOption('d', "doi");
 		Option searchOp = parser.addBooleanOption('s', "search-for-doi");
@@ -100,7 +100,7 @@ public class Main {
 			
 			if (outputFile.exists() && !forceOverwrite) {
 				exitWithError(2, "Error: File '" + outputPath 
-						+ "' already exists.\nTry using -f (force overwrite).");
+						+ "' already exists.\nTry using -f (force).");
 			}
 			
 			if (!explicitDoi.equals("")) {

@@ -16,6 +16,15 @@ import org.w3c.dom.NodeList;
 
 public class CrossRefMetadata {
 	
+	public enum Type {
+		JOURNAL,
+		BOOK,
+		DISSERTATION,
+		CONFERENCE,
+		REPORT_PAPER,
+		OTHER,
+	}
+	
 	private static final String NAMESPACE_PREFIX = "cr";
 	private static final String NAMESPACE_URI 
 					= "http://www.crossref.org/xschema/1.0";
@@ -28,6 +37,12 @@ public class CrossRefMetadata {
 	private static XPathExpression DAY_EXPR;
 	private static XPathExpression MONTH_EXPR;
 	private static XPathExpression YEAR_EXPR;
+	private static XPathExpression JOURNAL_EXPR;
+	private static XPathExpression BOOK_EXPR;
+	private static XPathExpression DISSERTATION_EXPR;
+	private static XPathExpression CONFERENCE_EXPR;
+	private static XPathExpression REPORT_PAPER_EXPR;
+	
 	
 	private Document doc;
 	
@@ -71,6 +86,12 @@ public class CrossRefMetadata {
 			DAY_EXPR = xpath.compile("//cr:day");
 			MONTH_EXPR = xpath.compile("//cr:month");
 			YEAR_EXPR = xpath.compile("//cr:year");
+			JOURNAL_EXPR = xpath.compile("exists(//cr:journal)");
+			BOOK_EXPR = xpath.compile("exists(//cr:book)");
+			DISSERTATION_EXPR = xpath.compile("exists(//cr:dissertation)");
+			CONFERENCE_EXPR = xpath.compile("exists(//cr:conference)");
+			REPORT_PAPER_EXPR = xpath.compile("exists(//cr:report-paper)");
+			
 		} catch (XPathExpressionException e) {
 			System.err.println("Error: Malformed XPath expressions.");
 			System.err.println(e);
@@ -84,6 +105,30 @@ public class CrossRefMetadata {
 	
 	public String getDoi() {
 		return "";
+	}
+	
+	public Type getType() throws XPathExpressionException {
+		try {
+			if (JOURNAL_EXPR.evaluate(doc, XPathConstants.BOOLEAN)
+					.equals(Boolean.TRUE)) {
+				return Type.JOURNAL;
+			} else if ((Boolean) BOOK_EXPR.evaluate(doc, XPathConstants.BOOLEAN)
+					.equals(Boolean.TRUE)) {
+				return Type.BOOK;
+			} else if ((Boolean) DISSERTATION_EXPR.evaluate(doc, XPathConstants.BOOLEAN)
+					.equals(Boolean.TRUE)) {
+				return Type.DISSERTATION;
+			} else if ((Boolean) CONFERENCE_EXPR.evaluate(doc, XPathConstants.BOOLEAN)
+					.equals(Boolean.TRUE)) {
+				return Type.CONFERENCE;
+			} else if ((Boolean) REPORT_PAPER_EXPR.evaluate(doc, XPathConstants.BOOLEAN)
+					.equals(Boolean.TRUE)) {
+				return Type.REPORT_PAPER;
+			}
+		} catch (XPathExpressionException e) {
+			/* Do nothing. */
+		}
+		return Type.OTHER;
 	}
 
 	public String[] getTitles() throws XPathExpressionException {
