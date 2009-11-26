@@ -18,7 +18,7 @@ public class Journal {
 	static {
 		XPath xpath = Unixref.getXPath();
 		try {
-			JOURNAL_ARTICLE_EXPR = xpath.compile("//cr:journal_article");
+			JOURNAL_ARTICLE_EXPR = xpath.compile("cr:journal_article");
 		} catch (XPathExpressionException e) {
 			System.err.println("Error: Malformed XPath expressions.");
 			System.err.println(e);

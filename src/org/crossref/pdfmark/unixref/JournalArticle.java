@@ -28,15 +28,15 @@ public class JournalArticle {
 	static {
 		XPath xpath = Unixref.getXPath();
 		try {
-			TITLES_EXPR = xpath.compile("//cr:titles/cr:title");
-			AUTHORS_EXPR = xpath.compile("//cr:contributors/cr:person_name"
+			TITLES_EXPR = xpath.compile("cr:titles/cr:title");
+			AUTHORS_EXPR = xpath.compile("cr:contributors/cr:person_name"
 					+ "[@contributor_role='author']");
-			GIVEN_NAME_EXPR = xpath.compile("//cr:given_name");
-			SURNAME_EXPR = xpath.compile("//cr:surname");
-			DATE_EXPR = xpath.compile("//cr:publication_date");
-			DAY_EXPR = xpath.compile("//cr:day");
-			MONTH_EXPR = xpath.compile("//cr:month");
-			YEAR_EXPR = xpath.compile("//cr:year");
+			GIVEN_NAME_EXPR = xpath.compile("cr:given_name");
+			SURNAME_EXPR = xpath.compile("cr:surname");
+			DATE_EXPR = xpath.compile("cr:publication_date");
+			DAY_EXPR = xpath.compile("cr:day");
+			MONTH_EXPR = xpath.compile("cr:month");
+			YEAR_EXPR = xpath.compile("cr:year");
 		} catch (XPathExpressionException e) {
 			System.err.println("Error: Malformed XPath expressions.");
 			System.err.println(e);
@@ -101,9 +101,9 @@ public class JournalArticle {
 
 			// TODO What if month and day are not two digits strings?
 			date = year.getTextContent();
-			if (!month.equals("")) {
+			if (month != null) {
 				date += "-" + month.getTextContent();
-				if (!day.equals("")) {
+				if (day != null) {
 					date += "-" + day.getTextContent();
 				}
 			}
