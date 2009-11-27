@@ -10,7 +10,9 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.crossref.pdfmark.XmlUtils;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class Unixref {
@@ -25,8 +27,8 @@ public class Unixref {
 	}
 	
 	private static final String NAMESPACE_PREFIX = "cr";
-	private static final String NAMESPACE_URI 
-					= "http://www.crossref.org/xschema/1.1";
+	private static final String NAMESPACE_URI_10= "http://www.crossref.org/xschema/1.0";
+	private static final String NAMESPACE_URI_11 = "http://www.crossref.org/xschema/1.1";
 	
 	private static XPathExpression JOURNAL_EXPR;
 	private static XPathExpression BOOK_EXPR;
@@ -40,38 +42,28 @@ public class Unixref {
 	
 	private Journal journal;
 	
-	static {
-		getXPath();
-		
-		try {
-			JOURNAL_EXPR = xpath.compile("//cr:journal");
-			BOOK_EXPR = xpath.compile("//cr:book");
-			DISSERTATION_EXPR = xpath.compile("//cr:dissertation");
-			CONFERENCE_EXPR = xpath.compile("//cr:conference");
-			REPORT_PAPER_EXPR = xpath.compile("//cr:report-paper");
-		} catch (XPathExpressionException e) {
-			System.err.println("Error: Malformed XPath expressions.");
-			System.err.println(e);
-			System.exit(2);
-		}
-	}
-	
-	public static XPath getXPath() {
+	public static XPath getXPath(Document doc) {
 		if (xpath == null) {
+			/* Attempt to determine the ns for the record element. */
+			Node rn = doc.getElementsByTagNameNS("*", "doi_record").item(0);
+			Element record = (Element) rn;
+			final String nsUri = XmlUtils.getNamespaceUriDeclaration(record);
+			
 			XPathFactory factory = XPathFactory.newInstance();
 			xpath = factory.newXPath();
 			xpath.setNamespaceContext(new NamespaceContext() {
 				@Override
 				public String getNamespaceURI(String prefix) {
 					if (prefix.equals(NAMESPACE_PREFIX)) {
-						return NAMESPACE_URI;
+						return nsUri;
 					}
 					return XMLConstants.NULL_NS_URI;
 				}
 	
 				@Override
 				public String getPrefix(String namespaceURI) {
-					if (namespaceURI.equals(NAMESPACE_URI)) {
+					if (namespaceURI.equals(NAMESPACE_URI_10)
+							|| namespaceURI.equals(NAMESPACE_URI_11)) {
 						return NAMESPACE_PREFIX;
 					}
 					return null;
@@ -86,8 +78,16 @@ public class Unixref {
 		return xpath;
 	}
 	
-	public Unixref(Document doc) {
+	public Unixref(Document doc) throws XPathExpressionException {
 		this.doc = doc;
+		
+		getXPath(doc);
+			
+		JOURNAL_EXPR = xpath.compile("//cr:journal");
+		BOOK_EXPR = xpath.compile("//cr:book");
+		DISSERTATION_EXPR = xpath.compile("//cr:dissertation");
+		CONFERENCE_EXPR = xpath.compile("//cr:conference");
+		REPORT_PAPER_EXPR = xpath.compile("//cr:report-paper");
 	}
 	
 	public Type getType() throws XPathExpressionException {
@@ -117,7 +117,7 @@ public class Unixref {
 	public Journal getJournal() throws XPathExpressionException {
 		if (journal == null) {
 			Node n = (Node) JOURNAL_EXPR.evaluate(doc, XPathConstants.NODE);
-			journal = new Journal(n);
+			journal = new Journal(doc, n);
 		}
 		return journal;
 	}

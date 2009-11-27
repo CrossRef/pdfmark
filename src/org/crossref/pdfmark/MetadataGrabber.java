@@ -7,6 +7,7 @@ import java.util.Queue;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -25,6 +26,7 @@ public class MetadataGrabber {
 	
 	public static final int CLIENT_EXCEPTION_CODE = -1;
 	public static final int CRUMMY_XML_CODE = -2;
+	public static final int BAD_XPATH_CODE = -3;
 	
 	private static final String HOST_NAME = "api.labs.crossref.org";
 	
@@ -108,6 +110,8 @@ public class MetadataGrabber {
 			req.handler.onFailure(req.doi, CLIENT_EXCEPTION_CODE, e.toString());
 		} catch (SAXException e) {
 			req.handler.onFailure(req.doi, CRUMMY_XML_CODE, e.toString());
+		} catch (XPathExpressionException e) {
+			req.handler.onFailure(req.doi, BAD_XPATH_CODE, e.toString());
 		}
 	}
 	

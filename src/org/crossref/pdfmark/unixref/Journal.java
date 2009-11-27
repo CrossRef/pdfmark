@@ -5,6 +5,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 public class Journal {
@@ -18,42 +19,39 @@ public class Journal {
 	private static XPathExpression VOLUME_EXPR;
 	private static XPathExpression ISSUE_EXPR;
 	
+	private Document doc;
+	
 	private Node journalNode;
 	
 	private JournalArticle journalArticle;
 	
 	private String doi, preferredIssn, title, issue, volume, electronicIssn;
 	
-	static {
-		XPath xpath = Unixref.getXPath();
-		try {
-			JOURNAL_ARTICLE_EXPR = xpath.compile("cr:journal_article");
-			PRINT_ISSN_EXPR = xpath.compile("cr:journal_metadata"
-					+ "/cr:issn[@media_type='print']");
-			ELECTRONIC_ISSN_EXPR = xpath.compile("cr:journal_metadata"
-					+ "/cr:issn[@media_type='electronic']");
-			ANY_ISSN_EXPR = xpath.compile("cr:journal_metadata"
-					+ "/cr:issn");
-			DOI_EXPR = xpath.compile("cr:journal_metadata/cr:doi_data/cr:doi");
-			TITLE_EXPR = xpath.compile("cr:journal_metadata/cr:full_title");
-			VOLUME_EXPR = xpath.compile("cr:journal_issue/cr:journal_volume/cr:volume");
-			ISSUE_EXPR = xpath.compile("cr:journal_issue/cr:issue");
-		} catch (XPathExpressionException e) {
-			System.err.println("Error: Malformed XPath expressions.");
-			System.err.println(e);
-			System.exit(2);
-		}
-	}
-	
-	public Journal(Node newJournalNode) {
+	public Journal(Document newDoc, Node newJournalNode) 
+			throws XPathExpressionException {
 		journalNode = newJournalNode;
+		doc = newDoc;
+		
+		XPath xpath = Unixref.getXPath(doc);
+		
+		JOURNAL_ARTICLE_EXPR = xpath.compile("cr:journal_article");
+		PRINT_ISSN_EXPR = xpath.compile("cr:journal_metadata"
+				+ "/cr:issn[@media_type='print']");
+		ELECTRONIC_ISSN_EXPR = xpath.compile("cr:journal_metadata"
+				+ "/cr:issn[@media_type='electronic']");
+		ANY_ISSN_EXPR = xpath.compile("cr:journal_metadata"
+				+ "/cr:issn");
+		DOI_EXPR = xpath.compile("cr:journal_metadata/cr:doi_data/cr:doi");
+		TITLE_EXPR = xpath.compile("cr:journal_metadata/cr:full_title");
+		VOLUME_EXPR = xpath.compile("cr:journal_issue/cr:journal_volume/cr:volume");
+		ISSUE_EXPR = xpath.compile("cr:journal_issue/cr:issue");
 	}
 	
 	public JournalArticle getArticle() throws XPathExpressionException {
 		if (journalArticle == null) {
 			Node n = (Node) JOURNAL_ARTICLE_EXPR.evaluate(journalNode, 
 				      							          XPathConstants.NODE);
-			journalArticle = new JournalArticle(n);
+			journalArticle = new JournalArticle(doc, n);
 		}
 		return journalArticle;
 	}

@@ -5,6 +5,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -26,28 +27,22 @@ public class JournalArticle {
 	
 	private String publishedDate, doi;
 	
-	static {
-		XPath xpath = Unixref.getXPath();
-		try {
-			TITLES_EXPR = xpath.compile("cr:titles/cr:title");
-			AUTHORS_EXPR = xpath.compile("cr:contributors/cr:person_name"
-					+ "[@contributor_role='author']");
-			GIVEN_NAME_EXPR = xpath.compile("cr:given_name");
-			SURNAME_EXPR = xpath.compile("cr:surname");
-			DATE_EXPR = xpath.compile("cr:publication_date");
-			DAY_EXPR = xpath.compile("cr:day");
-			MONTH_EXPR = xpath.compile("cr:month");
-			YEAR_EXPR = xpath.compile("cr:year");
-			DOI_EXPR = xpath.compile("cr:doi_data/cr:doi");
-		} catch (XPathExpressionException e) {
-			System.err.println("Error: Malformed XPath expressions.");
-			System.err.println(e);
-			System.exit(2);
-		}
-	}
-	
-	public JournalArticle(Node newArticleNode) {
+	public JournalArticle(Document doc, Node newArticleNode) 
+			throws XPathExpressionException {
 		articleNode = newArticleNode;
+		
+		XPath xpath = Unixref.getXPath(doc);
+		
+		TITLES_EXPR = xpath.compile("cr:titles/cr:title");
+		AUTHORS_EXPR = xpath.compile("cr:contributors/cr:person_name"
+				+ "[@contributor_role='author']");
+		GIVEN_NAME_EXPR = xpath.compile("cr:given_name");
+		SURNAME_EXPR = xpath.compile("cr:surname");
+		DATE_EXPR = xpath.compile("cr:publication_date");
+		DAY_EXPR = xpath.compile("cr:day");
+		MONTH_EXPR = xpath.compile("cr:month");
+		YEAR_EXPR = xpath.compile("cr:year");
+		DOI_EXPR = xpath.compile("cr:doi_data/cr:doi");
 	}
 	
 	public String[] getTitles() throws XPathExpressionException {

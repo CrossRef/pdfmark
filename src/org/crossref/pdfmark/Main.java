@@ -6,8 +6,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.crossref.pdfmark.XmpUtils.XmpException;
-
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
@@ -115,15 +113,13 @@ public class Main {
 				
 				byte[] merged = reader.getMetadata();
 				
-//				if (optionalXmpData != null) {
-//					// TODO Is meta data XMP? Is it empty? What to do if it is 
-//					// not XMP?
-//					merged = XmpUtils.mergeXmp(merged, optionalXmpData);
-//				}
-//				
-//				if (resolvedXmpData != null) {
-//					merged = XmpUtils.mergeXmp(merged, resolvedXmpData);
-//				}
+				if (optionalXmpData != null) {
+					merged = XmpUtils.mergeXmp(merged, optionalXmpData);
+				}
+				
+				if (resolvedXmpData != null) {
+					merged = XmpUtils.mergeXmp(merged, resolvedXmpData);
+				}
 				
 				merged = resolvedXmpData;
 				

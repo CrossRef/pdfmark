@@ -4,75 +4,124 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
+
+import com.lowagie.text.xml.xmp.XmpArray;
+import com.lowagie.text.xml.xmp.XmpReader;
+import com.lowagie.text.xml.xmp.XmpSchema;
+import com.lowagie.text.xml.xmp.XmpWriter;
 
 public class XmpUtils {
 	
-	private static XmpUtils utils = new XmpUtils();
-	
 	private XmpUtils() {
-		
 	}
 	
 	/**
-	 * Merge the <rdf:RDF> section of two XML documents. All <rdf:description>
-	 * elements from left and right are maintained in a new XML document.
+	 * Parse out all the XmpSchema from a blob of XMP data.
 	 */
-	public static byte[] mergeXmp(byte[] left, byte[] right) 
-			throws XmpException {
+	public static XmpSchema[] parseSchemata(byte[] xmpData) throws XmpException {
+		Document doc = null;
+		
 		try {
+			XmpReader reader = new XmpReader(xmpData);
+			byte[] xmlData = reader.serializeDoc();
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			factory.setNamespaceAware(true);
 			DocumentBuilder builder = factory.newDocumentBuilder();
-			
-			Document leftDoc = builder.parse(new ByteArrayInputStream(left));
-			Document rightDoc = builder.parse(new ByteArrayInputStream(right));
-			Node rdfNode = leftDoc.getElementsByTagNameNS("rdf", "RDF")
-			                      .item(0);
-			NodeList descNodes = rightDoc.getElementsByTagNameNS("rdf", "RDF")
-			 				             .item(0)
-									     .getChildNodes();
-			
-			for (int i=0; i<descNodes.getLength(); i++) {
-				Node copy = leftDoc.importNode(descNodes.item(i), true);
-				rdfNode.appendChild(copy);
-			}
-			
-			Transformer trans = TransformerFactory.newInstance().newTransformer();
-			ByteArrayOutputStream bout = new ByteArrayOutputStream();
-			
-			trans.transform(new DOMSource(leftDoc), new StreamResult(bout));
-			return bout.toByteArray();
-			
-		} catch (TransformerException e) {
-			throw utils.new XmpException(e);
+			doc = builder.parse(new ByteArrayInputStream(xmlData));
 		} catch (IOException e) {
-			throw utils.new XmpException(e);
+			throw new XmpException(e);
 		} catch (SAXException e) {
-			throw utils.new XmpException(e);
+			throw new XmpException(e);
 		} catch (ParserConfigurationException e) {
-			throw utils.new XmpException(e);
+			throw new XmpException(e);
+		}
+		
+		NodeList descriptionNodes = doc.getElementsByTagName("description");
+		XmpSchema[] schemata = new XmpSchema[descriptionNodes.getLength()];
+		
+		for (int i=0; i<descriptionNodes.getLength(); i++) {
+			Element description = (Element) descriptionNodes.item(i);
+			NodeList children = descriptionNodes.item(i).getChildNodes();
+			
+			String[] ns = XmlUtils.getNamespaceDeclaration(description);
+			schemata[i] = new AnyXmpSchema(ns[0], ns[1]);
+			
+			for (int j=0; j<children.getLength(); j++) {
+				Node n = children.item(i);
+				if (n instanceof Element) {
+					parseRdfElement(schemata[i], (Element) n);
+				}
+			}
+		}
+		
+		return schemata;
+	}
+	
+	private static void parseRdfElement(XmpSchema schema, Element ele) {
+		String propertyName = ele.getLocalName();
+		
+		/* Should have either Text or a single <rdf:Bag/Alt/Seq>. */
+		Node content = ele.getChildNodes().item(0);
+		
+		if (content instanceof Text) {
+			String value = content.getNodeValue();
+			schema.setProperty(propertyName, value);
+		} else if (content instanceof Element) {
+			XmpArray ary = parseRdfList((Element) content);
+			schema.setProperty(propertyName, ary);
 		}
 	}
 	
-	/**
-	 * A catch-all exception that is often thrown by XMP utility methods.
+	private static XmpArray parseRdfList(Element list) {
+		XmpArray ary = new XmpArray(list.getLocalName());
+		NodeList items = list.getChildNodes();
+		for (int i=0; i<items.getLength(); i++) {
+			Node n = items.item(i);
+			if (n instanceof Element) {
+				ary.add(n.getTextContent());
+			}
+		}
+		return ary;
+	}
+	
+	/** 
+	 * Combines the RDF description blocks from left and right. Those from
+	 * right will overwrite those from left in the case that left and right
+	 * contain description blocks with the same namespace.
 	 */
-	public class XmpException extends RuntimeException {
-		public XmpException(Throwable t) {
-			super(t);
+	public static byte[] mergeXmp(byte[] left, byte[] right) throws XmpException {
+		if (left == null || left.length == 0) return right;
+		if (right == null || right.length == 0) return left;
+		
+		XmpSchema[] leftSchemata = parseSchemata(left);
+		XmpSchema[] rightSchemata = parseSchemata(right);
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		
+		try {
+			XmpWriter writer = new XmpWriter(bout);
+			for (XmpSchema schema : leftSchemata) {
+				writer.addRdfDescription(schema);
+			}
+			for (XmpSchema schema : rightSchemata) {
+				writer.addRdfDescription(schema);
+			}
+			writer.close();
+			return bout.toByteArray();
+		} catch (IOException e) {
+			throw new XmpException(e);
 		}
 	}
 }

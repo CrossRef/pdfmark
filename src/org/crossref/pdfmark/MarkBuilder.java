@@ -79,7 +79,7 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 		if (vals.length == 1) {
 			schema.setProperty(key, vals[0]);
 		} else if (vals.length > 1) {
-			XmpArray bag = new XmpArray(XmpArray.UNORDERED);
+			XmpArray bag = new XmpArray(XmpArray.ORDERED);
 			for (String val : vals) {
 				bag.add(val);
 			}
