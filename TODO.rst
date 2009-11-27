@@ -2,17 +2,18 @@
 =========================================================================
 
 - Remove MetadataGrabber and separate thread.
-- If metadata block in a PDF is not XMP then quit out. Unless -f is used,
-  then overwrite.
+- Switch to OpenURL query.
+- Fix XMP merging.
 
 A few hours
 =========================================================================
 
-- Rewrite XMP merging.
-- Fill in more DC/PRISM elements in MarkBuilder.
 - Rewrite MarkBuilder as something more reusable.
 - Add file globbing.
-- Testing using many PDFS from OA publishers.
 
 Involved, hours or days
 =========================================================================
+
+- Expand MarkBuilder or whatever replaces it to support all query
+  response data possible.
+- Expand unixref model to support all types.
