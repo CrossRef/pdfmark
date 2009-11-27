@@ -26,7 +26,7 @@ public class Unixref {
 	
 	private static final String NAMESPACE_PREFIX = "cr";
 	private static final String NAMESPACE_URI 
-					= "http://www.crossref.org/xschema/1.0";
+					= "http://www.crossref.org/xschema/1.1";
 	
 	private static XPathExpression JOURNAL_EXPR;
 	private static XPathExpression BOOK_EXPR;
@@ -120,9 +120,5 @@ public class Unixref {
 			journal = new Journal(n);
 		}
 		return journal;
-	}
-	
-	public String getDoi() {
-		return "";
 	}
 }

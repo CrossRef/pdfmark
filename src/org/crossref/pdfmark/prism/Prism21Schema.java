@@ -22,7 +22,7 @@ public class Prism21Schema extends XmpSchema {
 	public static final String DISTRIBUTOR = "prism:distributor";
 	public static final String DOI = "prism:doi";
 	public static final String EDITION = "prism:edition";
-	public static final String ELSSN = "prism:elssn";
+	public static final String E_ISSN = "prism:eIssn";
 	public static final String ENDING_PAGE = "prism:endingPage";
 	public static final String EVENT = "prism:event";
 	public static final String EXPIRATION_DATE = "prism:expirationDate";

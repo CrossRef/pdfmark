@@ -6,6 +6,7 @@ import java.io.IOException;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.crossref.pdfmark.prism.Prism21Schema;
+import org.crossref.pdfmark.unixref.Journal;
 import org.crossref.pdfmark.unixref.JournalArticle;
 import org.crossref.pdfmark.unixref.Unixref;
 
@@ -19,15 +20,15 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 	private byte[] xmpData;
 	
 	@Override
-	public void onMetadata(Unixref md) {
+	public void onMetadata(String requestedDoi, Unixref md) {
 		try {
 			if (md.getType() != Unixref.Type.JOURNAL) {
-				onFailure(md.getDoi(), MetadataGrabber.CRUMMY_XML_CODE,
+				onFailure(requestedDoi, MetadataGrabber.CRUMMY_XML_CODE,
 						"No journal article metadata for DOI.");
 				return;
 			}
 		} catch (XPathExpressionException e) {
-			onFailure(md.getDoi(), MetadataGrabber.CRUMMY_XML_CODE,
+			onFailure(requestedDoi, MetadataGrabber.CRUMMY_XML_CODE,
 					"Could not determine if DOI has any journal article metadata.");
 			return;
 		}
@@ -35,7 +36,8 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		
 		try {
-			JournalArticle article = md.getJournal().getArticle();
+			Journal journal = md.getJournal();
+			JournalArticle article = journal.getArticle();
 			
 			XmpWriter writer = new XmpWriter(bout);
 			
@@ -43,22 +45,28 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 			addToSchema(dc, DublinCoreSchema.CREATOR, article.getContributors());
 			addToSchema(dc, DublinCoreSchema.TITLE, article.getTitles());
 			dc.setProperty(DublinCoreSchema.DATE, article.getDate());
-			dc.setProperty(DublinCoreSchema.IDENTIFIER, md.getDoi());
+			dc.setProperty(DublinCoreSchema.IDENTIFIER, article.getDoi());
 			writer.addRdfDescription(dc);
 			
 			XmpSchema prism = new Prism21Schema();
 			prism.setProperty(Prism21Schema.PUBLICATION_DATE, article.getDate());
-			prism.setProperty(Prism21Schema.DOI, md.getDoi());
+			prism.setProperty(Prism21Schema.DOI, article.getDoi());
+			prism.setProperty(Prism21Schema.ISSN, journal.getPreferredIssn());
+			prism.setProperty(Prism21Schema.E_ISSN, journal.getElectronicIssn());
+			prism.setProperty(Prism21Schema.ISSUE_IDENTIFIER, journal.getDoi());
+			prism.setProperty(Prism21Schema.ISSUE_NAME, journal.getFullTitle());
+			prism.setProperty(Prism21Schema.VOLUME, journal.getVolume());
+			prism.setProperty(Prism21Schema.NUMBER, journal.getIssue());
 			writer.addRdfDescription(prism);
 			
 			writer.close();
 			xmpData = bout.toByteArray();
 			
 		} catch (IOException e) {
-			onFailure(md.getDoi(), MetadataGrabber.CLIENT_EXCEPTION_CODE,
+			onFailure(requestedDoi, MetadataGrabber.CLIENT_EXCEPTION_CODE,
 					  e.toString());
 		} catch (XPathExpressionException e) {
-			onFailure(md.getDoi(), MetadataGrabber.CLIENT_EXCEPTION_CODE,
+			onFailure(requestedDoi, MetadataGrabber.CLIENT_EXCEPTION_CODE,
 					  e.toString());
 		}
 	}

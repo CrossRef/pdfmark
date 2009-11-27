@@ -18,12 +18,13 @@ public class JournalArticle {
 	private static XPathExpression DAY_EXPR;
 	private static XPathExpression MONTH_EXPR;
 	private static XPathExpression YEAR_EXPR;
+	private static XPathExpression DOI_EXPR;
 	
 	private Node articleNode;
 	
 	private String[] titles, contributors;
 	
-	private String publishedDate;
+	private String publishedDate, doi;
 	
 	static {
 		XPath xpath = Unixref.getXPath();
@@ -37,6 +38,7 @@ public class JournalArticle {
 			DAY_EXPR = xpath.compile("cr:day");
 			MONTH_EXPR = xpath.compile("cr:month");
 			YEAR_EXPR = xpath.compile("cr:year");
+			DOI_EXPR = xpath.compile("cr:doi_data/cr:doi");
 		} catch (XPathExpressionException e) {
 			System.err.println("Error: Malformed XPath expressions.");
 			System.err.println(e);
@@ -110,6 +112,19 @@ public class JournalArticle {
 		}
 
 		return publishedDate = date;
+	}
+	
+	public String getDoi() throws XPathExpressionException {
+		if (doi == null) {
+			Node n = (Node) DOI_EXPR.evaluate(articleNode, XPathConstants.NODE);
+			
+			if (n != null) {
+				doi = n.getTextContent();
+			} else {
+				doi = "";
+			}
+		}
+		return doi;
 	}
 
 }
