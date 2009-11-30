@@ -52,6 +52,11 @@ public class Main {
 	}
 	
 	public Main(String[] args) {
+		if (args.length == 0) {
+			printUsage();
+			System.exit(2);
+		}
+		
 		CmdLineParser parser = new CmdLineParser();
 		Option provideXmpOp = parser.addStringOption('p', "xmp-file");
 		Option overwriteOp = parser.addBooleanOption('f', "force");
