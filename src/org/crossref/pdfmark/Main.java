@@ -86,6 +86,11 @@ public class Main {
 			exitWithError(2, "-d and -s are mutually exclusive options.");
 		}
 		
+		if (!outputDir.isEmpty() && !new File(outputDir).exists()) {
+			exitWithError(2, "The output directory, '" + outputDir 
+					+ "' does not exist.");
+		}
+		
 		byte[] optionalXmpData = null;
 		
 		if (!optionalXmpPath.equals("")) {
