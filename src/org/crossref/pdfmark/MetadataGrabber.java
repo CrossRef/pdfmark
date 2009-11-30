@@ -52,8 +52,6 @@ public class MetadataGrabber {
 	
 	private DocumentBuilder builder;
 	
-	private boolean processing;
-	
 	private boolean terminated;
 	
 	private Object monitor = new Object();
@@ -83,10 +81,13 @@ public class MetadataGrabber {
 			public void run() {
 				while (!terminated) {
 					while (!requests.isEmpty()) {
-						dealWithRequest(requests.remove());
+						dealWithRequest(requests.peek());
+						
+						synchronized (monitor) {
+							requests.remove();
+							monitor.notifyAll();
+						}
 					}
-					
-					processing = false;
 					
 					synchronized (monitor) {
 						try {
@@ -131,10 +132,6 @@ public class MetadataGrabber {
 		}
 	}
 	
-	public boolean isProcessing() {
-		return processing;
-	}
-	
 	public void grabOne(String doi, Handler handler) {
 		String uri = "http://" + HOST_NAME + "/" + doi + ".xml";
 		HttpGet getRequest = new HttpGet(uri);
@@ -145,9 +142,22 @@ public class MetadataGrabber {
 		ri.handler = handler;
 		requests.add(ri);
 		
-		processing = true;
 		synchronized (monitor) {
 			monitor.notifyAll();
+		}
+	}
+	
+	public void waitForEmpty() {
+		synchronized (monitor) {
+			while (true) {
+				if (requests.isEmpty()) {
+					break;
+				}
+				try {
+					monitor.wait();
+				} catch (InterruptedException e) {
+				}
+			}
 		}
 	}
 	

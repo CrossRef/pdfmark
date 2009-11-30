@@ -182,27 +182,10 @@ public class Main {
 			}
 		};
 		grabber.grabOne(doi, builder);
-		
-		System.out.print("Grabbing metadata for '" + doi + "'");
-		waitForGrabber();
+		System.out.print("Grabbing metadata for '" + doi + "'...");
+		grabber.waitForEmpty();
 		
 		return builder.getXmpData();
-	}
-	
-	private void waitForGrabber() {
-		// TODO Move print into separate thread and do networking 
-		// in main thread, and remove this junk - it will slow us
-		// down for batches.
-		while (grabber.isProcessing()) {
-			System.out.print(".");
-			System.out.flush();
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-			}
-		}
-		
-		System.out.println();
 	}
 	
 	private void exitWithError(int code, String error) {

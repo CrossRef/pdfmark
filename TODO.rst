@@ -1,7 +1,6 @@
 10 minute items
 ==========================================================
 
-- Remove MetadataGrabber and separate thread.
 - Switch to OpenURL query.
 
 A few hours

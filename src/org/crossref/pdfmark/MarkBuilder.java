@@ -62,12 +62,12 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 			addToSchema(dc, DublinCoreSchema.CREATOR, article.getContributors());
 			addToSchema(dc, DublinCoreSchema.TITLE, article.getTitles());
 			addToSchema(dc, DublinCoreSchema.DATE, article.getDate());
-			addToSchema(dc, DublinCoreSchema.IDENTIFIER, article.getDoi());
+			addToSchema(dc, DublinCoreSchema.IDENTIFIER, "doi:" + article.getDoi());
 			writer.addRdfDescription(dc);
 			
 			XmpSchema prism = new Prism21Schema();
 			addToSchema(prism, Prism21Schema.PUBLICATION_DATE, article.getDate());
-			addToSchema(prism, Prism21Schema.DOI, article.getDoi());
+			addToSchema(prism, Prism21Schema.DOI, "doi:" + article.getDoi());
 			addToSchema(prism, Prism21Schema.ISSN, journal.getPreferredIssn());
 			addToSchema(prism, Prism21Schema.E_ISSN, journal.getElectronicIssn());
 			addToSchema(prism, Prism21Schema.ISSUE_IDENTIFIER, journal.getDoi());
