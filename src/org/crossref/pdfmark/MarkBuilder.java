@@ -44,19 +44,19 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 			XmpSchema dc = new DublinCoreSchema();
 			addToSchema(dc, DublinCoreSchema.CREATOR, article.getContributors());
 			addToSchema(dc, DublinCoreSchema.TITLE, article.getTitles());
-			dc.setProperty(DublinCoreSchema.DATE, article.getDate());
-			dc.setProperty(DublinCoreSchema.IDENTIFIER, article.getDoi());
+			addToSchema(dc, DublinCoreSchema.DATE, article.getDate());
+			addToSchema(dc, DublinCoreSchema.IDENTIFIER, article.getDoi());
 			writer.addRdfDescription(dc);
 			
 			XmpSchema prism = new Prism21Schema();
-			prism.setProperty(Prism21Schema.PUBLICATION_DATE, article.getDate());
-			prism.setProperty(Prism21Schema.DOI, article.getDoi());
-			prism.setProperty(Prism21Schema.ISSN, journal.getPreferredIssn());
-			prism.setProperty(Prism21Schema.E_ISSN, journal.getElectronicIssn());
-			prism.setProperty(Prism21Schema.ISSUE_IDENTIFIER, journal.getDoi());
-			prism.setProperty(Prism21Schema.ISSUE_NAME, journal.getFullTitle());
-			prism.setProperty(Prism21Schema.VOLUME, journal.getVolume());
-			prism.setProperty(Prism21Schema.NUMBER, journal.getIssue());
+			addToSchema(prism, Prism21Schema.PUBLICATION_DATE, article.getDate());
+			addToSchema(prism, Prism21Schema.DOI, article.getDoi());
+			addToSchema(prism, Prism21Schema.ISSN, journal.getPreferredIssn());
+			addToSchema(prism, Prism21Schema.E_ISSN, journal.getElectronicIssn());
+			addToSchema(prism, Prism21Schema.ISSUE_IDENTIFIER, journal.getDoi());
+			addToSchema(prism, Prism21Schema.ISSUE_NAME, journal.getFullTitle());
+			addToSchema(prism, Prism21Schema.VOLUME, journal.getVolume());
+			addToSchema(prism, Prism21Schema.NUMBER, journal.getIssue());
 			writer.addRdfDescription(prism);
 			
 			writer.close();
@@ -68,6 +68,12 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 		} catch (XPathExpressionException e) {
 			onFailure(requestedDoi, MetadataGrabber.CLIENT_EXCEPTION_CODE,
 					  e.toString());
+		}
+	}
+	
+	private static void addToSchema(XmpSchema schema, String key, String val) {
+		if (val != null && !val.isEmpty()) {
+			schema.setProperty(key, val);
 		}
 	}
 	

@@ -40,7 +40,7 @@ public class XmpUtils {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			factory.setNamespaceAware(true);
 			DocumentBuilder builder = factory.newDocumentBuilder();
-			doc = builder.parse(new ByteArrayInputStream(xmlData));
+			doc = builder.parse(new ByteArrayInputStream(xmpData));
 		} catch (IOException e) {
 			throw new XmpException(e);
 		} catch (SAXException e) {
@@ -49,18 +49,18 @@ public class XmpUtils {
 			throw new XmpException(e);
 		}
 		
-		NodeList descriptionNodes = doc.getElementsByTagName("description");
+		NodeList descriptionNodes = doc.getElementsByTagName("rdf:Description");
 		XmpSchema[] schemata = new XmpSchema[descriptionNodes.getLength()];
 		
 		for (int i=0; i<descriptionNodes.getLength(); i++) {
 			Element description = (Element) descriptionNodes.item(i);
-			NodeList children = descriptionNodes.item(i).getChildNodes();
+			NodeList children = description.getChildNodes();
 			
 			String[] ns = XmlUtils.getNamespaceDeclaration(description);
 			schemata[i] = new AnyXmpSchema(ns[0], ns[1]);
 			
 			for (int j=0; j<children.getLength(); j++) {
-				Node n = children.item(i);
+				Node n = children.item(j);
 				if (n instanceof Element) {
 					parseRdfElement(schemata[i], (Element) n);
 				}
@@ -71,7 +71,7 @@ public class XmpUtils {
 	}
 	
 	private static void parseRdfElement(XmpSchema schema, Element ele) {
-		String propertyName = ele.getLocalName();
+		String propertyName = ele.getNodeName();
 		
 		/* Should have either Text or a single <rdf:Bag/Alt/Seq>. */
 		Node content = ele.getChildNodes().item(0);
@@ -83,10 +83,20 @@ public class XmpUtils {
 			XmpArray ary = parseRdfList((Element) content);
 			schema.setProperty(propertyName, ary);
 		}
+		
+		/* And attributes... */
+		NamedNodeMap attribs = ele.getAttributes();
+		
+		for (int i=0; i<attribs.getLength(); i++) {
+			Attr attr = (Attr) attribs.item(i);
+			if (!attr.getName().startsWith("xmlns")) {
+				schema.setProperty(attr.getName(), attr.getTextContent());
+			}
+		}
 	}
 	
 	private static XmpArray parseRdfList(Element list) {
-		XmpArray ary = new XmpArray(list.getLocalName());
+		XmpArray ary = new XmpArray("rdf:" + list.getLocalName());
 		NodeList items = list.getChildNodes();
 		for (int i=0; i<items.getLength(); i++) {
 			Node n = items.item(i);
@@ -110,10 +120,23 @@ public class XmpUtils {
 		XmpSchema[] rightSchemata = parseSchemata(right);
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		
+		String[] noWriteList = new String[rightSchemata.length];
+		for (int i=0; i<noWriteList.length; i++) {
+			noWriteList[i] = rightSchemata[i].getXmlns();
+		}
+		
 		try {
 			XmpWriter writer = new XmpWriter(bout);
 			for (XmpSchema schema : leftSchemata) {
-				writer.addRdfDescription(schema);
+				boolean found = false;
+				for (String checkAgainst : noWriteList) {
+					if (schema.getXmlns().equals(checkAgainst)) {
+						found = true;
+					}
+				}
+				if (!found) {
+					writer.addRdfDescription(schema);
+				}
 			}
 			for (XmpSchema schema : rightSchemata) {
 				writer.addRdfDescription(schema);

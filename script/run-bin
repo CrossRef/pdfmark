@@ -1,4 +1,4 @@
-PROJ_HOME=/Users/karl/Projects/pdfmark
+PROJ_HOME=/Users/karl/Dropbox/Code/pdfmark
 LIB_DIR=$PROJ_HOME/lib
 BIN_DIR=$PROJ_HOME/bin
 LIB_LIST=$LIB_DIR/commons-logging-1.1.1.jar:$LIB_DIR/commons-logging-adapters-1.1.1.jar:$LIB_DIR/commons-logging-api-1.1.1.jar:$LIB_DIR/httpclient-4.0.jar:$LIB_DIR/httpcore-4.0.1.jar:$LIB_DIR/httpcore-nio-4.0.1.jar:$LIB_DIR/httpmime-4.0.jar:$LIB_DIR/iText-2.1.7.jar:$LIB_DIR/jargs.jar

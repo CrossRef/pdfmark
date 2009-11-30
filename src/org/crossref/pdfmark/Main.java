@@ -121,8 +121,6 @@ public class Main {
 					merged = XmpUtils.mergeXmp(merged, resolvedXmpData);
 				}
 				
-				merged = resolvedXmpData;
-				
 				stamper.setXmpMetadata(merged);
 				
 				stamper.close();
