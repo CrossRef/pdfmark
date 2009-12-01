@@ -23,7 +23,7 @@ public class Prism11Schema extends XmpSchema {
 	
 	public static final String DEFAULT_XPATH_ID = "prism";
 	public static final String DEFAULT_XPATH_URI 
-				= "http://prismstandard.org/namespaces/1.2/basic/";
+				= "http://prismstandard.org/namespaces/1.1/basic/";
 	
 	public static final String CATEGORY = "prism:category";
 	public static final String CONTENT_LENGTH = "prism:contentLength";
