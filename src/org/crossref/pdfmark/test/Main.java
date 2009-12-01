@@ -6,6 +6,8 @@ public class Main {
 	
 	public static void main(String[] args) {
 		JUnitCore.main("org.crossref.pdfmark.test.MarkBuilderTest");
+		System.out.println();
+		System.out.println();
 	}
 
 }
