@@ -182,7 +182,7 @@ public class Main {
 			}
 		};
 		grabber.grabOne(doi, builder);
-		System.out.print("Grabbing metadata for '" + doi + "'...");
+		System.out.println("Grabbing metadata for '" + doi + "'...");
 		grabber.waitForEmpty();
 		
 		return builder.getXmpData();
