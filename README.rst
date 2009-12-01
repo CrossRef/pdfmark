@@ -14,10 +14,10 @@ git submodules within your pdfmark repo:
 
 $ git submodule init
 
-Then alter your ~/.git/config file - point the
-"test-data/extended" submodule to your local
-copy of the pdftestdata repo. Finally, update the
-submodules within your pdfmark repo:
+Then alter your .git/config file (in your pdfmark
+repo) - point the "test-data/extended" submodule to 
+your local copy of the pdftestdata repo. Finally, 
+update the submodules within your pdfmark repo:
 
 $ git submodule update
 
