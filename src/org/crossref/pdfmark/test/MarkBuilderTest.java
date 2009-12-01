@@ -75,6 +75,8 @@ public class MarkBuilderTest {
 			
 			pdfInfo.dispose();
 		}
+		
+		grabber.shutDown();
 	}
 
 }
