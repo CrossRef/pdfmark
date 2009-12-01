@@ -8,6 +8,7 @@ A few hours
 
 - Rewrite MarkBuilder as something more reusable.
 - Add file globbing.
+- Complete more unit tests.
 
 Involved, hours or days
 ==========================================================

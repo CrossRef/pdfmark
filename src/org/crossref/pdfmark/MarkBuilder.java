@@ -74,6 +74,8 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 			addToSchema(prism, Prism21Schema.ISSUE_NAME, journal.getFullTitle());
 			addToSchema(prism, Prism21Schema.VOLUME, journal.getVolume());
 			addToSchema(prism, Prism21Schema.NUMBER, journal.getIssue());
+			addToSchema(prism, Prism21Schema.STARTING_PAGE, article.getFirstPage());
+			addToSchema(prism, Prism21Schema.ENDING_PAGE, article.getLastPage());
 			writer.addRdfDescription(prism);
 			
 			writer.close();

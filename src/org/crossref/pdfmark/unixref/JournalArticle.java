@@ -37,12 +37,14 @@ public class JournalArticle {
 	private static XPathExpression MONTH_EXPR;
 	private static XPathExpression YEAR_EXPR;
 	private static XPathExpression DOI_EXPR;
+	private static XPathExpression FIRST_PAGE_EXPR;
+	private static XPathExpression LAST_PAGE_EXPR;
 	
 	private Node articleNode;
 	
 	private String[] titles, contributors;
 	
-	private String publishedDate, doi;
+	private String publishedDate, doi, firstPage, lastPage;
 	
 	public JournalArticle(Document doc, Node newArticleNode) 
 			throws XPathExpressionException {
@@ -60,6 +62,8 @@ public class JournalArticle {
 		MONTH_EXPR = xpath.compile("cr:month");
 		YEAR_EXPR = xpath.compile("cr:year");
 		DOI_EXPR = xpath.compile("cr:doi_data/cr:doi");
+		FIRST_PAGE_EXPR = xpath.compile("cr:pages/cr:first_page");
+		LAST_PAGE_EXPR = xpath.compile("cr:pages/cr:last_page");
 	}
 	
 	public String[] getTitles() throws XPathExpressionException {
@@ -124,6 +128,36 @@ public class JournalArticle {
 		}
 
 		return publishedDate = date;
+	}
+	
+	public String getFirstPage() throws XPathExpressionException {
+		if (firstPage != null) {
+			return firstPage;
+		}
+		
+		Node fpNode = (Node) FIRST_PAGE_EXPR.evaluate(articleNode,
+												      XPathConstants.NODE);
+		
+		if (fpNode != null) {
+			firstPage = fpNode.getTextContent();
+		}
+		
+		return firstPage;
+	}
+	
+	public String getLastPage() throws XPathExpressionException {
+		if (lastPage != null) {
+			return lastPage;
+		}
+		
+		Node lpNode = (Node) LAST_PAGE_EXPR.evaluate(articleNode,
+												     XPathConstants.NODE);
+		
+		if (lpNode != null) {
+			lastPage = lpNode.getTextContent();
+		}
+		
+		return lastPage;
 	}
 	
 	public String getDoi() throws XPathExpressionException {
