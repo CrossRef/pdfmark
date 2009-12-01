@@ -1,20 +1,18 @@
 package org.crossref.pdfmark.test;
 
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.junit.After;
-import org.junit.Before;
-
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
 
-public class StamperTest {
+public class PdfInfoDirectory {
 	
-	private String operatingPath;
+private String operatingPath;
 	
 	private String outputPath;
 	
@@ -22,7 +20,8 @@ public class StamperTest {
 	
 	private byte[] existingXmp;
 	
-	public StamperTest(String newOperatingPath, String newOutputPath) throws IOException {
+	public PdfInfoDirectory(String newOperatingPath, String newOutputPath) 
+			throws IOException {
 		operatingPath = newOperatingPath;
 		outputPath = newOutputPath;
 		
@@ -43,8 +42,18 @@ public class StamperTest {
 		return existingXmp;
 	}
 	
-	@Before
-	protected void createStamper() throws IOException, DocumentException {
+	protected String getDoi() throws IOException {
+		File doiFile = new File(getOperatingPath() + File.separator + "doi.txt");
+		String doi = "";
+		if (doiFile.exists()) {
+			DataInputStream dIn = new DataInputStream(new FileInputStream(doiFile));
+			doi = dIn.readLine();
+			dIn.close();
+		}
+		return doi;
+	}
+	
+	protected void create() throws IOException, DocumentException {
 		/* Find a PDF file in the operating directory. */
 		String pdfFileName = null;
 		File operatingDir = new File(operatingPath);
@@ -68,8 +77,7 @@ public class StamperTest {
 		stamper = new PdfStamper(reader, new FileOutputStream(pdfOutPath));
 	}
 	
-	@After
-	protected void disposeStamper() throws IOException, DocumentException {
+	protected void dispose() throws IOException, DocumentException {
 		/* Close the stamper. */
 		stamper.close();
 	}

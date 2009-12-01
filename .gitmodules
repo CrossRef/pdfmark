@@ -1,0 +1,3 @@
+[submodule "test-data/extended"]
+	path = test-data/extended
+	url = kward@labs.crossref.org:/home/kward/pdftestdata

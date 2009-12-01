@@ -149,6 +149,7 @@ public class XmpUtils {
 				for (String checkAgainst : noWriteList) {
 					if (schema.getXmlns().equals(checkAgainst)) {
 						found = true;
+						break;
 					}
 				}
 				if (!found) {
