@@ -113,6 +113,10 @@ public class Main {
 		for (String pdfFilePath : parser.getRemainingArgs()) {
 			String outputPath = pdfFilePath + ".out";
 			
+			if (!outputDir.isEmpty()) {
+				outputPath = outputDir + File.separator + outputPath;
+			}
+			
 			File pdfFile = new File(pdfFilePath);
 			File outputFile = new File(pdfFilePath + ".out");
 			
