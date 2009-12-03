@@ -18,3 +18,4 @@ Involved, hours or days
 - Expand MarkBuilder or whatever replaces it to 
   support all query response data possible.
 - Expand unixref model to support all types.
+- Implement scanning of PDF documents.
