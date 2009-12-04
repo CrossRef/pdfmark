@@ -8,4 +8,4 @@ PDF test data repository. If you do, just perform
 this command to put the data into your local
 repository:
 
-$ git submodule update
+$ git submodule update --init
