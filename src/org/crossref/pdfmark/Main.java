@@ -65,8 +65,8 @@ public class Main {
 		Option outputOp = parser.addStringOption('o', "output-dir");
 		Option doiOp = parser.addStringOption('d', "doi");
 		Option searchOp = parser.addBooleanOption('s', "search-for-doi");
-		Option copyrightOp = parser.addStringOption("copyright");
-		Option rightsOp = parser.addStringOption("rights");
+		Option copyrightOp = parser.addStringOption("no-copyright");
+		Option rightsOp = parser.addStringOption("rights-agent");
 		
 		try {
 			parser.parse(args);
