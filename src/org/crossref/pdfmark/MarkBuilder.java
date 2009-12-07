@@ -36,10 +36,10 @@ import com.lowagie.text.xml.xmp.XmpWriter;
 
 public abstract class MarkBuilder implements MetadataGrabber.Handler {
 
-	private static URI DX_RESOLVER;
+	private static URI DOI_RESOLVER;
 	static {
 		try {
-			DX_RESOLVER = new URI("http://dx.doi.org/");
+			DOI_RESOLVER = new URI("http://dx.doi.org/");
 		} catch (URISyntaxException e) {
 			/* Not possible. */
 		}
@@ -87,7 +87,7 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 			addToSchema(prism, Prism21Schema.NUMBER, journal.getIssue());
 			addToSchema(prism, Prism21Schema.STARTING_PAGE, article.getFirstPage());
 			addToSchema(prism, Prism21Schema.ENDING_PAGE, article.getLastPage());
-			addToSchema(prism, Prism21Schema.URL, getDoiDxUrl(article.getDoi()));
+			addToSchema(prism, Prism21Schema.URL, getUrlForDoi(article.getDoi()));
 			writer.addRdfDescription(prism);
 			
 			writer.close();
@@ -108,8 +108,8 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 		}
 	}
 	
-	private static String getDoiDxUrl(String doi) {
-		return DX_RESOLVER.resolve(doi).toString();
+	private static String getUrlForDoi(String doi) {
+		return DOI_RESOLVER.resolve(doi).toString();
 	}
 	
 	/**
