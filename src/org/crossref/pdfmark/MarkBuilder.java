@@ -19,6 +19,8 @@ package org.crossref.pdfmark;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -34,6 +36,15 @@ import com.lowagie.text.xml.xmp.XmpWriter;
 
 public abstract class MarkBuilder implements MetadataGrabber.Handler {
 
+	private static URI DX_RESOLVER;
+	static {
+		try {
+			DX_RESOLVER = new URI("http://dx.doi.org/");
+		} catch (URISyntaxException e) {
+			/* Not possible. */
+		}
+	}
+	
 	private byte[] xmpData;
 	
 	@Override
@@ -76,6 +87,7 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 			addToSchema(prism, Prism21Schema.NUMBER, journal.getIssue());
 			addToSchema(prism, Prism21Schema.STARTING_PAGE, article.getFirstPage());
 			addToSchema(prism, Prism21Schema.ENDING_PAGE, article.getLastPage());
+			addToSchema(prism, Prism21Schema.URL, getDoiDxUrl(article.getDoi()));
 			writer.addRdfDescription(prism);
 			
 			writer.close();
@@ -94,6 +106,10 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 		if (val != null && !val.isEmpty()) {
 			schema.setProperty(key, val);
 		}
+	}
+	
+	private static String getDoiDxUrl(String doi) {
+		return DX_RESOLVER.resolve(doi).toString();
 	}
 	
 	/**

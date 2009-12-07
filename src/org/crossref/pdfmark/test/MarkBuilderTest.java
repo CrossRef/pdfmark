@@ -62,7 +62,7 @@ public class MarkBuilderTest {
 				MarkBuilder builder = new MarkBuilder() {
 					@Override
 					public void onFailure(String doi, int code, String msg) {
-						System.err.println("DOI " + doi + " could not be retrieved.");
+						System.err.println(doi + " could not be retrieved.");
 					}
 				};
 				

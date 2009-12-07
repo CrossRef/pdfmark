@@ -23,7 +23,7 @@ public class Prism21Schema extends XmpSchema {
 	
 	public static final String DEFAULT_XPATH_ID = "prism";
 	public static final String DEFAULT_XPATH_URI 
-				= "http://prismstandard.org/namespaces/2.1/basic/";
+				= "http://prismstandard.org/namespaces/basic/2.1/";
 	
 	public static final String AGGREGATION_TYPE = "prism:aggregationType";
 	public static final String ALTERNATE_TITLE = "prism:alternateTitle";
