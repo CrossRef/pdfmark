@@ -39,6 +39,18 @@ public class Main {
 				" [{-p, --xmp-file} xmp_file]" +
 				" [{-o, --output-dir} output_dir] " +
 				" [{-d, --doi} doi]" + 
+				" [--no-copyright]" + 
+				" [--rights-agent rights_agent_str]" +
+				" pdf_files");
+	}
+	
+	public static void printFutureUsage() {
+		/* This will be correct once all features are implemented. */
+		System.err.println("Usage: pdfmark" +
+				" [{-f, --force}]" +
+				" [{-p, --xmp-file} xmp_file]" +
+				" [{-o, --output-dir} output_dir] " +
+				" [{-d, --doi} doi]" + 
 				" [{-s, --search-for-doi]" + 
 				" [--no-copyright]" + 
 				" [--rights-agent rights_agent_str]" +
