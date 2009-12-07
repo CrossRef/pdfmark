@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.crossref.pdfmark.prism.Prism21Schema;
+import org.crossref.pdfmark.pub.Publisher;
 import org.crossref.pdfmark.unixref.Journal;
 import org.crossref.pdfmark.unixref.JournalArticle;
 import org.crossref.pdfmark.unixref.Unixref;
@@ -47,10 +48,33 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 	
 	private byte[] xmpData;
 	
+	private Unixref unixref;
+	
+	private Publisher publisher;
+	
+	private boolean generateCopyright;
+	
+	private String rightsAgent;
+	
+	public MarkBuilder(boolean generateCopyright, String rightsAgent) {
+		this.generateCopyright = generateCopyright;
+		this.rightsAgent = rightsAgent;
+	}
+	
 	@Override
-	public void onMetadata(String requestedDoi, Unixref md) {
+	public void onMetadata(String requestedDoi, Unixref unixref) {
+		this.unixref = unixref;
+	}
+	
+	@Override
+	public void onPublisher(String requestedDoi, Publisher pub) {
+		this.publisher = pub;
+	}
+	
+	@Override
+	public void onComplete(String requestedDoi) {
 		try {
-			if (md.getType() != Unixref.Type.JOURNAL) {
+			if (unixref.getType() != Unixref.Type.JOURNAL) {
 				onFailure(requestedDoi, MetadataGrabber.CRUMMY_XML_CODE,
 						"No journal article metadata for DOI.");
 				return;
@@ -64,7 +88,7 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		
 		try {
-			Journal journal = md.getJournal();
+			Journal journal = unixref.getJournal();
 			JournalArticle article = journal.getArticle();
 			
 			XmpWriter writer = new XmpWriter(bout);
@@ -74,6 +98,12 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 			addToSchema(dc, DublinCoreSchema.TITLE, article.getTitles());
 			addToSchema(dc, DublinCoreSchema.DATE, article.getDate());
 			addToSchema(dc, DublinCoreSchema.IDENTIFIER, "doi:" + article.getDoi());
+			if (generateCopyright) {
+				addToSchema(dc, DublinCoreSchema.RIGHTS, getCopyright());
+			}
+			if (publisher != null) {
+				addToSchema(dc, DublinCoreSchema.PUBLISHER, publisher.getName());
+			}
 			writer.addRdfDescription(dc);
 			
 			XmpSchema prism = new Prism21Schema();
@@ -88,6 +118,10 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 			addToSchema(prism, Prism21Schema.STARTING_PAGE, article.getFirstPage());
 			addToSchema(prism, Prism21Schema.ENDING_PAGE, article.getLastPage());
 			addToSchema(prism, Prism21Schema.URL, getUrlForDoi(article.getDoi()));
+			addToSchema(prism, Prism21Schema.RIGHTS_AGENT, rightsAgent);
+			if (generateCopyright) {
+				addToSchema(prism, Prism21Schema.COPYRIGHT, getCopyright());
+			}
 			writer.addRdfDescription(prism);
 			
 			writer.close();
@@ -110,6 +144,11 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 	
 	private static String getUrlForDoi(String doi) {
 		return DOI_RESOLVER.resolve(doi).toString();
+	}
+	
+	private String getCopyright() throws XPathExpressionException {
+		return "(C) " + unixref.getJournal().getArticle().getYear() + " "
+					+ publisher.getName();
 	}
 	
 	/**

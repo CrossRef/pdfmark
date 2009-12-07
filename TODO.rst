@@ -1,9 +1,6 @@
 10 minute items
 ==========================================================
 
-- Switch to OpenURL query.
-- Trim author surname / given names.
-
 A few hours
 ==========================================================
 

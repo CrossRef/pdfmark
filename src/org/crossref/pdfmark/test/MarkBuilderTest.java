@@ -59,7 +59,7 @@ public class MarkBuilderTest {
 				PdfStamper stamper = pdfInfo.getStamper();
 				byte[] existingXmp = pdfInfo.getExistingXmp();
 				
-				MarkBuilder builder = new MarkBuilder() {
+				MarkBuilder builder = new MarkBuilder(true, "") {
 					@Override
 					public void onFailure(String doi, int code, String msg) {
 						System.err.println(doi + " could not be retrieved.");

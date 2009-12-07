@@ -52,12 +52,15 @@ public class Unixref {
 	private static XPathExpression DISSERTATION_EXPR;
 	private static XPathExpression CONFERENCE_EXPR;
 	private static XPathExpression REPORT_PAPER_EXPR;
+	private static XPathExpression OWNER_PREFIX_EXPR;
 	
 	private static XPath xpath;
 	
 	private Document doc;
 	
 	private Journal journal;
+	
+	private String ownerPrefix;
 	
 	public static XPath getXPath(Document doc) {
 		if (xpath == null) {
@@ -105,6 +108,15 @@ public class Unixref {
 		DISSERTATION_EXPR = xpath.compile("//cr:dissertation");
 		CONFERENCE_EXPR = xpath.compile("//cr:conference");
 		REPORT_PAPER_EXPR = xpath.compile("//cr:report-paper");
+		OWNER_PREFIX_EXPR = xpath.compile("//cr:doi_record/@owner");
+	}
+	
+	public String getOwnerPrefix() throws XPathExpressionException {
+		if (ownerPrefix == null) {
+			Node n = (Node) OWNER_PREFIX_EXPR.evaluate(doc, XPathConstants.NODE);
+			ownerPrefix = n == null ? "" : n.getTextContent();
+		}
+		return ownerPrefix;
 	}
 	
 	public Type getType() throws XPathExpressionException {

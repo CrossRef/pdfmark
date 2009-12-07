@@ -40,6 +40,8 @@ public class Main {
 				" [{-o, --output-dir} output_dir] " +
 				" [{-d, --doi} doi]" + 
 				" [{-s, --search-for-doi]" + 
+				" [--no-copyright]" + 
+				" [--rights-agent rights_agent_str]" +
 				" pdf_files");
 	}
 
@@ -63,6 +65,8 @@ public class Main {
 		Option outputOp = parser.addStringOption('o', "output-dir");
 		Option doiOp = parser.addStringOption('d', "doi");
 		Option searchOp = parser.addBooleanOption('s', "search-for-doi");
+		Option copyrightOp = parser.addStringOption("copyright");
+		Option rightsOp = parser.addStringOption("rights");
 		
 		try {
 			parser.parse(args);
@@ -81,6 +85,10 @@ public class Main {
 		                         parser.getOptionValue(overwriteOp, Boolean.FALSE);
 		boolean searchForDoi   = (Boolean) 
 		                         parser.getOptionValue(searchOp, Boolean.FALSE);
+		boolean noCopyright    = (Boolean)
+								 parser.getOptionValue(copyrightOp, Boolean.FALSE);
+		String rightsAgent     = (String)
+		 						 parser.getOptionValue(rightsOp, "");
 		
 		if (!explicitDoi.equals("") && searchForDoi) {
 			exitWithError(2, "-d and -s are mutually exclusive options.");
@@ -133,7 +141,9 @@ public class Main {
 			}
 			
 			if (!explicitDoi.equals("")) {
-				resolvedXmpData = getXmpForDoi(explicitDoi);
+				resolvedXmpData = getXmpForDoi(explicitDoi, 
+						                       !noCopyright, 
+						                       rightsAgent);
 			}
 			
 			try {
@@ -171,8 +181,8 @@ public class Main {
 		shutDown();
 	}
 	
-	private byte[] getXmpForDoi(String doi) {
-		MarkBuilder builder = new MarkBuilder() {
+	private byte[] getXmpForDoi(String doi, boolean genCr, String agent) {
+		MarkBuilder builder = new MarkBuilder(genCr, agent) {
 			@Override
 			public void onFailure(String doi, int code, String msg) {
 				if (code == MetadataGrabber.CRUMMY_XML_CODE) {

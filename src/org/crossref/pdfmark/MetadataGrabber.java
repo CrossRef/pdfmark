@@ -34,6 +34,8 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.crossref.pdfmark.pub.Publisher;
 import org.crossref.pdfmark.unixref.Unixref;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -44,7 +46,18 @@ public class MetadataGrabber {
 	public static final int CRUMMY_XML_CODE = -2;
 	public static final int BAD_XPATH_CODE = -3;
 	
-	private static final String HOST_NAME = "api.labs.crossref.org";
+	private static final String DOI_QUERY = 
+	    "http://www.crossref.org/openurl/" +
+		"?id=doi:{0}&noredirect=true" +
+		"&pid=kward@crossref.org" +
+		"&format=unixref";
+
+    private static final String PUBLISHER_QUERY = 
+	    "http://www.crossref.org/" +
+		"getPrefixPublisher/" +
+		"?prefix={0}";
+    
+    private static final String TOKEN = "{0}";
 	
 	private HttpClient client;
 	
@@ -56,10 +69,76 @@ public class MetadataGrabber {
 	
 	private Object monitor = new Object();
 	
+	private enum RequestType {
+		DOI,
+		PUBLISHER,
+	}
+	
 	private class RequestInfo {
 		private String doi;
 		private HttpUriRequest request;
 		private Handler handler;
+		private RequestType requestType;
+		
+		private RequestInfo(RequestType rt) {
+			requestType = rt;
+		}
+		
+		private RequestInfo withRequest(String location, String replacement) {
+			String detokRequest = location.replace(TOKEN, replacement);
+			request = new HttpGet(detokRequest);
+			return this;
+		}
+		
+		private RequestInfo withDoi(String doi) {
+			this.doi = doi;
+			return this;
+		}
+		
+		private RequestInfo withHandler(Handler handler) {
+			this.handler = handler;
+			return this;
+		}
+		
+		private void performOn(HttpClient client) {
+			try {
+				HttpResponse sponse = client.execute(request);
+				HttpEntity entity = sponse.getEntity();
+				
+				if (entity != null) {
+					Document doc = builder.parse(entity.getContent());
+					
+				    if (requestType == RequestType.DOI) {
+					    Unixref unixref = new Unixref(doc);
+					    String ownerPrefix = unixref.getOwnerPrefix();
+					    handler.onMetadata(doi, unixref);
+					    if (!ownerPrefix.isEmpty()) {
+					    	queuePubReq(doi, handler, unixref.getOwnerPrefix());
+					    } else {
+					    	handler.onComplete(doi);
+					    }
+				    } else if (requestType == RequestType.PUBLISHER) {
+				    	Publisher publisher = new Publisher(doc);
+				    	handler.onPublisher(doi, publisher);
+				    	handler.onComplete(doi);
+				    }
+				    
+				} else {
+					StatusLine sl = sponse.getStatusLine();
+					handler.onFailure(doi, 
+							          sl.getStatusCode(), 
+							          sl.getReasonPhrase());
+				}
+			} catch (ClientProtocolException e) {
+				handler.onFailure(doi, CLIENT_EXCEPTION_CODE, e.toString());
+			} catch (IOException e) {
+				handler.onFailure(doi, CLIENT_EXCEPTION_CODE, e.toString());
+			} catch (SAXException e) {
+				handler.onFailure(doi, CRUMMY_XML_CODE, e.toString());
+			} catch (XPathExpressionException e) {
+				handler.onFailure(doi, BAD_XPATH_CODE, e.toString());
+			}
+		}
 	}
 	
 	public MetadataGrabber() {
@@ -81,7 +160,7 @@ public class MetadataGrabber {
 			public void run() {
 				while (!terminated) {
 					while (!requests.isEmpty()) {
-						dealWithRequest(requests.peek());
+						requests.peek().performOn(client);
 						
 						synchronized (monitor) {
 							requests.remove();
@@ -107,40 +186,24 @@ public class MetadataGrabber {
 		}
 	}
 	
-	private void dealWithRequest(RequestInfo req) {
-		try {
-			HttpResponse sponse = client.execute(req.request);
-			HttpEntity entity = sponse.getEntity();
-			
-			if (entity != null) {
-			    Document doc = builder.parse(entity.getContent());
-			    req.handler.onMetadata(req.doi, new Unixref(doc));
-			} else {
-				StatusLine sl = sponse.getStatusLine();
-				req.handler.onFailure(req.doi, 
-						              sl.getStatusCode(), 
-						              sl.getReasonPhrase());
-			}
-		} catch (ClientProtocolException e) {
-			req.handler.onFailure(req.doi, CLIENT_EXCEPTION_CODE, e.toString());
-		} catch (IOException e) {
-			req.handler.onFailure(req.doi, CLIENT_EXCEPTION_CODE, e.toString());
-		} catch (SAXException e) {
-			req.handler.onFailure(req.doi, CRUMMY_XML_CODE, e.toString());
-		} catch (XPathExpressionException e) {
-			req.handler.onFailure(req.doi, BAD_XPATH_CODE, e.toString());
+	public void grabOne(String doi, Handler handler) {
+		requests.add(new RequestInfo(RequestType.DOI)
+					.withDoi(doi)
+					.withHandler(handler)
+					.withRequest(DOI_QUERY, doi));
+		
+		synchronized (monitor) {
+			monitor.notifyAll();
 		}
+		/* Later, when we receive this response, we will queue
+		 * a RequestInfo to get publisher data. */
 	}
 	
-	public void grabOne(String doi, Handler handler) {
-		String uri = "http://" + HOST_NAME + "/" + doi + ".xml";
-		HttpGet getRequest = new HttpGet(uri);
-		
-		RequestInfo ri = new RequestInfo();
-		ri.doi = doi;
-		ri.request = getRequest;
-		ri.handler = handler;
-		requests.add(ri);
+	private void queuePubReq(String doi, Handler handler, String pubPrefix) {
+		requests.add(new RequestInfo(RequestType.PUBLISHER)
+					.withDoi(doi)
+					.withHandler(handler)
+					.withRequest(PUBLISHER_QUERY, pubPrefix));
 		
 		synchronized (monitor) {
 			monitor.notifyAll();
@@ -163,6 +226,8 @@ public class MetadataGrabber {
 	
 	public interface Handler {
 		public void onMetadata(String doi, Unixref metadata);
+		public void onPublisher(String doi, Publisher publisher);
+		public void onComplete(String doi);
 		public void onFailure(String doi, int code, String msg);
 	}
 

@@ -44,7 +44,7 @@ public class JournalArticle {
 	
 	private String[] titles, contributors;
 	
-	private String publishedDate, doi, firstPage, lastPage;
+	private String publishedDate, doi, firstPage, lastPage, publishedYear;
 	
 	public JournalArticle(Document doc, Node newArticleNode) 
 			throws XPathExpressionException {
@@ -97,7 +97,9 @@ public class JournalArticle {
 			Node a = s.item(i);
 			Node given = (Node) GIVEN_NAME_EXPR.evaluate(a, XPathConstants.NODE);
 			Node surname = (Node) SURNAME_EXPR.evaluate(a, XPathConstants.NODE);
-			names[i] = given.getTextContent() + " " + surname.getTextContent();
+			names[i] = given.getTextContent().trim() 
+					 + " " 
+					 + surname.getTextContent().trim();
 		}
 
 		return contributors = names;
@@ -128,6 +130,21 @@ public class JournalArticle {
 		}
 
 		return publishedDate = date;
+	}
+	
+	public String getYear() throws XPathExpressionException {
+		if (publishedYear == null) {
+			Node date = (Node) DATE_EXPR.evaluate(articleNode, 
+											      XPathConstants.NODE);
+			
+			if (date != null) {
+				Node n = (Node) YEAR_EXPR.evaluate(date, XPathConstants.NODE);
+				publishedYear = n.getTextContent();
+			} else {
+				publishedYear = "";
+			}
+		}
+		return publishedYear;
 	}
 	
 	public String getFirstPage() throws XPathExpressionException {
