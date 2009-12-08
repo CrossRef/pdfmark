@@ -24,6 +24,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.pdf.PdfDictionary;
+import com.lowagie.text.pdf.PdfName;
+import com.lowagie.text.pdf.PdfObject;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
 
@@ -93,7 +96,7 @@ public class Main {
 		 			             parser.getOptionValue(outputOp, "");
 		String explicitDoi     = (String) 
 		                         parser.getOptionValue(doiOp, "");
-		boolean forceOverwrite = (Boolean) 
+		boolean useTheForce    = (Boolean) 
 		                         parser.getOptionValue(overwriteOp, Boolean.FALSE);
 		boolean searchForDoi   = (Boolean) 
 		                         parser.getOptionValue(searchOp, Boolean.FALSE);
@@ -147,7 +150,7 @@ public class Main {
 						+ "' does not exist.");
 			}
 			
-			if (outputFile.exists() && !forceOverwrite) {
+			if (outputFile.exists() && !useTheForce) {
 				exitWithError(2, "Error: File '" + outputPath 
 						+ "' already exists.\nTry using -f (force).");
 			}
@@ -162,6 +165,15 @@ public class Main {
 				FileInputStream fileIn = new FileInputStream(pdfFile);
 				FileOutputStream fileOut = new FileOutputStream(outputFile);
 				PdfReader reader = new PdfReader(fileIn);
+				
+				if (isLinearPdf(reader) && !useTheForce) {
+					reader.close();
+					exitWithError(2, "Error: '" + pdfFilePath + "' is a"
+							+ " linearized PDF and force is not specified."
+							+ " This tool will damage the linearization of "
+							+ " the PDF.\nIf you don't mind that, use -f (force).");
+				}
+				
 				PdfStamper stamper = new PdfStamper(reader, fileOut);
 				
 				byte[] merged = reader.getMetadata();
@@ -191,6 +203,29 @@ public class Main {
 		}
 		
 		shutDown();
+	}
+	
+	/**
+	 * According to the PDF Reference Manual (appendix F) a linearized PDF
+	 * must have as its first object after the PDF header an indirect
+	 * dictionary containing only direct objects. Among these objects one
+	 * must be assigned the key "Linearized", representing the linearized PDF
+	 * version number.
+	 * 
+	 * @return true if the PDF read by reader is a linearized PDF.
+	 */
+	private static boolean isLinearPdf(PdfReader reader) {
+		boolean isLinear = false;
+		
+		PdfObject first = reader.getPdfObject(0);
+		if (first.isDictionary()) {
+			PdfDictionary linearizationParams = (PdfDictionary) first;
+			if (linearizationParams.contains(new PdfName("Linearized"))) {
+				isLinear = true;
+			}
+		}
+		
+		return isLinear;
 	}
 	
 	private byte[] getXmpForDoi(String doi, boolean genCr, String agent) {
