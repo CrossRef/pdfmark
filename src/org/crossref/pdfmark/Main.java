@@ -166,7 +166,7 @@ public class Main {
 				FileOutputStream fileOut = new FileOutputStream(outputFile);
 				PdfReader reader = new PdfReader(fileIn);
 				
-				if (isLinearPdf(reader) && !useTheForce) {
+				if (!useTheForce && isLinearPdf(reader)) {
 					reader.close();
 					exitWithError(2, "Error: '" + pdfFilePath + "' is a"
 							+ " linearized PDF and force is not specified."
@@ -214,13 +214,13 @@ public class Main {
 	 * 
 	 * @return true if the PDF read by reader is a linearized PDF.
 	 */
-	private static boolean isLinearPdf(PdfReader reader) {
+	public static boolean isLinearPdf(PdfReader reader) {
 		boolean isLinear = false;
 		
 		PdfObject first = reader.getPdfObject(0);
 		if (first.isDictionary()) {
 			PdfDictionary linearizationParams = (PdfDictionary) first;
-			if (linearizationParams.contains(new PdfName("Linearized"))) {
+			if (linearizationParams.contains(new PdfName("/Linearized"))) {
 				isLinear = true;
 			}
 		}
