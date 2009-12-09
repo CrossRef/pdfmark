@@ -18,13 +18,34 @@
 package org.crossref.pdfmark;
 import jargs.gnu.CmdLineParser;
 
+import java.awt.LinearGradientPaint;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.apache.pdfbox.PDFReader;
+import org.apache.pdfbox.cos.COSArray;
+import org.apache.pdfbox.cos.COSBoolean;
+import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSDocument;
+import org.apache.pdfbox.cos.COSFloat;
+import org.apache.pdfbox.cos.COSInteger;
+import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.cos.COSNull;
+import org.apache.pdfbox.cos.COSObject;
+import org.apache.pdfbox.cos.COSStream;
+import org.apache.pdfbox.cos.COSString;
+import org.apache.pdfbox.cos.ICOSVisitor;
+import org.apache.pdfbox.exceptions.COSVisitorException;
+import org.apache.pdfbox.pdfparser.PDFParser;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.pdf.PRIndirectReference;
 import com.lowagie.text.pdf.PdfDictionary;
+import com.lowagie.text.pdf.PdfDocument;
 import com.lowagie.text.pdf.PdfName;
 import com.lowagie.text.pdf.PdfObject;
 import com.lowagie.text.pdf.PdfReader;
@@ -155,6 +176,18 @@ public class Main {
 						+ "' already exists.\nTry using -f (force).");
 			}
 			
+			try {
+				if (!useTheForce && isLinearizedPdf(new FileInputStream(pdfFile))) {
+					exitWithError(2, "Error: '" + pdfFilePath + "' is a"
+							+ " linearized PDF and force is not specified."
+							+ " This tool will damage linearization of"
+							+ " the PDF.\nIf you don't mind that, use -f (force).");
+				}
+			} catch (IOException e) {
+				exitWithError(2, "Error: Could not determine linearization"
+						+ " because of:\n" + e);
+			}
+			
 			if (!explicitDoi.equals("")) {
 				resolvedXmpData = getXmpForDoi(explicitDoi, 
 						                       !noCopyright, 
@@ -165,15 +198,6 @@ public class Main {
 				FileInputStream fileIn = new FileInputStream(pdfFile);
 				FileOutputStream fileOut = new FileOutputStream(outputFile);
 				PdfReader reader = new PdfReader(fileIn);
-				
-				if (!useTheForce && isLinearPdf(reader)) {
-					reader.close();
-					exitWithError(2, "Error: '" + pdfFilePath + "' is a"
-							+ " linearized PDF and force is not specified."
-							+ " This tool will damage the linearization of "
-							+ " the PDF.\nIf you don't mind that, use -f (force).");
-				}
-				
 				PdfStamper stamper = new PdfStamper(reader, fileOut);
 				
 				byte[] merged = reader.getMetadata();
@@ -214,16 +238,30 @@ public class Main {
 	 * 
 	 * @return true if the PDF read by reader is a linearized PDF.
 	 */
-	public static boolean isLinearPdf(PdfReader reader) {
+	public static boolean isLinearizedPdf(FileInputStream in) throws IOException {
 		boolean isLinear = false;
 		
-		PdfObject first = reader.getPdfObject(0);
-		if (first.isDictionary()) {
-			PdfDictionary linearizationParams = (PdfDictionary) first;
-			if (linearizationParams.contains(new PdfName("/Linearized"))) {
-				isLinear = true;
+		PDFParser parser = new PDFParser(in);
+		parser.parse();
+		COSDocument doc = parser.getDocument();
+		
+		for (Object o : doc.getObjects()) {
+			COSObject obj = (COSObject) o;
+			if (obj.getObject() instanceof COSDictionary) {
+				COSDictionary dict = (COSDictionary) obj.getObject();
+				for (Object key : dict.keyList()) {
+					COSName name = (COSName) key;
+					if ("Linearized".equals(name.getName())) {
+						isLinear = true;
+						break;
+					}
+				}
+				
+				if (isLinear) break;
 			}
 		}
+		
+		doc.close();
 		
 		return isLinear;
 	}
