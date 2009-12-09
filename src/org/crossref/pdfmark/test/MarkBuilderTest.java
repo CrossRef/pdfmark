@@ -4,6 +4,7 @@ import java.io.File;
 
 import junit.framework.TestCase;
 
+import org.crossref.pdfmark.ApiKey;
 import org.crossref.pdfmark.MarkBuilder;
 import org.crossref.pdfmark.MetadataGrabber;
 import org.crossref.pdfmark.XmpUtils;
@@ -23,7 +24,7 @@ public class MarkBuilderTest {
 	
 	private static final String OUTPUT_DIR = "output/extended";
 	
-	private MetadataGrabber grabber = new MetadataGrabber();
+	private MetadataGrabber grabber = new MetadataGrabber(ApiKey.DEFAULT);
 	
 	@Before
 	public void makeOutputDir() {

@@ -18,36 +18,18 @@
 package org.crossref.pdfmark;
 import jargs.gnu.CmdLineParser;
 
-import java.awt.LinearGradientPaint;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.apache.pdfbox.PDFReader;
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBoolean;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSDocument;
-import org.apache.pdfbox.cos.COSFloat;
-import org.apache.pdfbox.cos.COSInteger;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSNull;
 import org.apache.pdfbox.cos.COSObject;
-import org.apache.pdfbox.cos.COSStream;
-import org.apache.pdfbox.cos.COSString;
-import org.apache.pdfbox.cos.ICOSVisitor;
-import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.pdfparser.PDFParser;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
 
 import com.lowagie.text.DocumentException;
-import com.lowagie.text.pdf.PRIndirectReference;
-import com.lowagie.text.pdf.PdfDictionary;
-import com.lowagie.text.pdf.PdfDocument;
-import com.lowagie.text.pdf.PdfName;
-import com.lowagie.text.pdf.PdfObject;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
 
@@ -55,7 +37,7 @@ import static jargs.gnu.CmdLineParser.Option;
 
 public class Main {
 	
-	private MetadataGrabber grabber = new MetadataGrabber();
+	private MetadataGrabber grabber;
 	
 	public static void printUsage() {
 		System.err.println("Usage: pdfmark" +
@@ -65,6 +47,7 @@ public class Main {
 				" [{-d, --doi} doi]" + 
 				" [--no-copyright]" + 
 				" [--rights-agent rights_agent_str]" +
+				" [--api-key search_key]" + 
 				" pdf_files");
 	}
 	
@@ -78,6 +61,7 @@ public class Main {
 				" [{-s, --search-for-doi]" + 
 				" [--no-copyright]" + 
 				" [--rights-agent rights_agent_str]" +
+				" [--api-key search_key]" + 
 				" pdf_files");
 	}
 
@@ -101,8 +85,9 @@ public class Main {
 		Option outputOp = parser.addStringOption('o', "output-dir");
 		Option doiOp = parser.addStringOption('d', "doi");
 		Option searchOp = parser.addBooleanOption('s', "search-for-doi");
-		Option copyrightOp = parser.addStringOption("no-copyright");
+		Option copyrightOp = parser.addBooleanOption("no-copyright");
 		Option rightsOp = parser.addStringOption("rights-agent");
+		Option apiKeyOp = parser.addStringOption("api-key");
 		
 		try {
 			parser.parse(args);
@@ -125,6 +110,8 @@ public class Main {
 								 parser.getOptionValue(copyrightOp, Boolean.FALSE);
 		String rightsAgent     = (String)
 		 						 parser.getOptionValue(rightsOp, "");
+		String apiKey          = (String)
+		 						 parser.getOptionValue(apiKeyOp, ApiKey.DEFAULT);
 		
 		if (!explicitDoi.equals("") && searchForDoi) {
 			exitWithError(2, "-d and -s are mutually exclusive options.");
@@ -150,6 +137,8 @@ public class Main {
 			
 			optionalXmpData = xmpFile.data;
 		}
+		
+		grabber = new MetadataGrabber(apiKey);
 		
 		/* Now we're ready to merge our imported or generated XMP data with what
 		 * is already in each PDF. */

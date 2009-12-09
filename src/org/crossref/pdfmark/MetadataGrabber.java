@@ -49,7 +49,7 @@ public class MetadataGrabber {
 	private static final String DOI_QUERY = 
 	    "http://www.crossref.org/openurl/" +
 		"?id=doi:{0}&noredirect=true" +
-		"&pid=kward@crossref.org" +
+		"&pid={1}" +
 		"&format=unixref";
 
     private static final String PUBLISHER_QUERY = 
@@ -57,7 +57,9 @@ public class MetadataGrabber {
 		"getPrefixPublisher/" +
 		"?prefix={0}";
     
-    private static final String TOKEN = "{0}";
+    private static final String QUERY_TOKEN = "{0}";
+    
+    private static final String KEY_TOKEN = "{1}";
 	
 	private HttpClient client;
 	
@@ -68,6 +70,8 @@ public class MetadataGrabber {
 	private boolean terminated;
 	
 	private Object monitor = new Object();
+	
+	private String apiKey;
 	
 	private enum RequestType {
 		DOI,
@@ -85,7 +89,15 @@ public class MetadataGrabber {
 		}
 		
 		private RequestInfo withRequest(String location, String replacement) {
-			String detokRequest = location.replace(TOKEN, replacement);
+			String detokRequest = location.replace(QUERY_TOKEN, replacement);
+			request = new HttpGet(detokRequest);
+			return this;
+		}
+		
+		private RequestInfo withRequest(String location, String replacement,
+				String key) {
+			String detokRequest = location.replace(QUERY_TOKEN, replacement);
+			detokRequest = detokRequest.replace(KEY_TOKEN, key);
 			request = new HttpGet(detokRequest);
 			return this;
 		}
@@ -141,7 +153,9 @@ public class MetadataGrabber {
 		}
 	}
 	
-	public MetadataGrabber() {
+	public MetadataGrabber(String apiKey) {
+		this.apiKey = apiKey;
+		
 		try {
 			DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
 			domFactory.setNamespaceAware(true);
@@ -190,7 +204,7 @@ public class MetadataGrabber {
 		requests.add(new RequestInfo(RequestType.DOI)
 					.withDoi(doi)
 					.withHandler(handler)
-					.withRequest(DOI_QUERY, doi));
+					.withRequest(DOI_QUERY, doi, apiKey));
 		
 		synchronized (monitor) {
 			monitor.notifyAll();
