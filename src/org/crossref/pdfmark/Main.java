@@ -169,8 +169,8 @@ public class Main {
 				if (!useTheForce && isLinearizedPdf(new FileInputStream(pdfFile))) {
 					exitWithError(2, "Error: '" + pdfFilePath + "' is a"
 							+ " linearized PDF and force is not specified."
-							+ " This tool will damage linearization of"
-							+ " the PDF.\nIf you don't mind that, use -f (force).");
+							+ " This tool will output non-linearized PDF."
+							+ "\nIf you don't mind that, use -f (force).");
 				}
 			} catch (IOException e) {
 				exitWithError(2, "Error: Could not determine linearization"
