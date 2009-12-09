@@ -1,0 +1,45 @@
+<project default="all">
+	<property name="output.dir" value="${basedir}/output"/>
+	<property name="classes.dir" value="${output.dir}/classes"/>
+	<property name="src.dir" value="${basedir}/src"/>
+	<property name="lib.dir" value="${basedir}/lib"/>
+	
+	<target name="clean">
+		<delete dir="${output.dir}" failonerror="false"/>
+		<delete file="${basedir}/pdfmark.jar" failonerror="false"/>
+	</target>
+	
+	<target name="build" depends="clean">
+		<mkdir dir="${output.dir}"/>
+		<mkdir dir="${classes.dir}"/>
+		
+		<javac srcdir="${src.dir}"
+				destdir="${classes.dir}">
+			<classpath>
+				<fileset dir="${lib.dir}" includes="*.jar"/>
+			</classpath>
+		</javac>
+	</target>
+	
+	<target name="package" depends="build">
+		<jar destfile="${basedir}/pdfmark.jar">
+			<fileset dir="${classes.dir}"/>
+			<zipfileset src="lib/jargs.jar" excludes="META-INF"/>
+			<zipfileset src="lib/commons-logging-adapters-1.1.1.jar" excludes="META-INF"/>
+			<zipfileset src="lib/pdfbox-0.8.0-incubating.jar" excludes="META-INF"/>
+			<zipfileset src="lib/httpclient-4.0.jar" excludes="META-INF"/>
+			<zipfileset src="lib/httpcore-nio-4.0.1.jar" excludes="META-INF"/>
+			<zipfileset src="lib/iText-2.1.7.jar" excludes="META-INF"/>
+			<zipfileset src="lib/commons-logging-api-1.1.1.jar" excludes="META-INF"/>
+			<zipfileset src="lib/commons-logging-1.1.1.jar" excludes="META-INF"/>
+			<zipfileset src="lib/httpmime-4.0.jar" excludes="META-INF"/>
+			<zipfileset src="lib/httpcore-4.0.1.jar" excludes="META-INF"/>
+			<manifest>
+				<attribute name="Main-Class" 
+					value="org.crossref.pdfmark.Main"/>
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="all" depends="package"/>
+</project>
