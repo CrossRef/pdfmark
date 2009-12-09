@@ -144,14 +144,22 @@ public class Main {
 		 * is already in each PDF. */
 		
 		for (String pdfFilePath : parser.getRemainingArgs()) {
-			String outputPath = pdfFilePath + ".out";
+			String outputPath = getOutFileName(pdfFilePath);
+			
+			/* Grab the leaf. */
+			if (outputPath.contains(File.separator)) {
+				String[] split = outputPath.split(File.separator);
+				outputPath = split[split.length - 1];
+			}
 			
 			if (!outputDir.isEmpty()) {
 				outputPath = outputDir + File.separator + outputPath;
+			} else {
+				/* Output to the working directory. */
 			}
 			
 			File pdfFile = new File(pdfFilePath);
-			File outputFile = new File(pdfFilePath + ".out");
+			File outputFile = new File(outputPath);
 			
 			byte[] resolvedXmpData = null;
 			
@@ -274,6 +282,15 @@ public class Main {
 		grabber.waitForEmpty();
 		
 		return builder.getXmpData();
+	}
+	
+	private static String getOutFileName(String pdfFileName) {
+		if (pdfFileName.endsWith(".pdf")) {
+			return pdfFileName.substring(0, pdfFileName.length() - 4)
+					+ "_xmp.pdf";
+		} else {
+			return pdfFileName + "_xmp.pdf";
+		}
 	}
 	
 	private void exitWithError(int code, String error) {
