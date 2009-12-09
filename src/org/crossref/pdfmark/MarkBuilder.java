@@ -98,10 +98,10 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 			addToSchema(dc, DublinCoreSchema.TITLE, article.getTitles());
 			addToSchema(dc, DublinCoreSchema.DATE, article.getDate());
 			addToSchema(dc, DublinCoreSchema.IDENTIFIER, "doi:" + article.getDoi());
-			if (generateCopyright) {
-				addToSchema(dc, DublinCoreSchema.RIGHTS, getCopyright());
-			}
 			if (publisher != null) {
+				if (generateCopyright) {
+					addToSchema(dc, DublinCoreSchema.RIGHTS, getCopyright());
+				}
 				addToSchema(dc, DublinCoreSchema.PUBLISHER, publisher.getName());
 			}
 			writer.addRdfDescription(dc);
@@ -119,7 +119,7 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 			addToSchema(prism, Prism21Schema.ENDING_PAGE, article.getLastPage());
 			addToSchema(prism, Prism21Schema.URL, getUrlForDoi(article.getDoi()));
 			addToSchema(prism, Prism21Schema.RIGHTS_AGENT, rightsAgent);
-			if (generateCopyright) {
+			if (publisher != null && generateCopyright) {
 				addToSchema(prism, Prism21Schema.COPYRIGHT, getCopyright());
 			}
 			writer.addRdfDescription(prism);
