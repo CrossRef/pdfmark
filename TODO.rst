@@ -7,12 +7,14 @@ A few hours
 - Rewrite MarkBuilder as something more reusable.
 - Add file globbing.
 - Complete more unit tests.
-- What to do with encrypted PDFs?
+- Remove use of iText in favour of PDFBox (it does
+  everything we need it to, while iText does a subset).
 
 Involved, hours or days
 ==========================================================
 
 - Expand MarkBuilder or whatever replaces it to 
-  support all query response data possible.
-- Expand unixref model to support all types.
+  support query response for non-article DOIs.
+- Expand unixref model to support non-article
+  types.
 - Implement scanning of PDF documents.
