@@ -3,3 +3,4 @@ output
 *.swp
 *~
 pdfmark.jar
+.DS_Store
