@@ -45,6 +45,8 @@ public class FileInfo {
 				xmpData = tmp;
 			}
 			
+			ni.data = xmpData;
+			
 			din.close();
 		} catch (FileNotFoundException e) {
 			ni.missing = true;
