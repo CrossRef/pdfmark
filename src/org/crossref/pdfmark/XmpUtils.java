@@ -91,8 +91,6 @@ public class XmpUtils {
 		String propertyName = ele.getNodeName();
 		
 		/* Should have either Text or a single <rdf:Bag/Alt/Seq>. */
-		Node content = ele.getChildNodes().item(0);
-		
 		boolean hasElementChildren = false;
 		for (int i=0; i<ele.getChildNodes().getLength(); i++) {
 		    Node n = ele.getChildNodes().item(i);
