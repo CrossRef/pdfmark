@@ -93,12 +93,20 @@ public class XmpUtils {
 		/* Should have either Text or a single <rdf:Bag/Alt/Seq>. */
 		Node content = ele.getChildNodes().item(0);
 		
-		if (content instanceof Text) {
-			String value = content.getNodeValue();
-			schema.setProperty(propertyName, value);
-		} else if (content instanceof Element) {
-			XmpArray ary = parseRdfList((Element) content);
-			schema.setProperty(propertyName, ary);
+		boolean hasElementChildren = false;
+		for (int i=0; i<ele.getChildNodes().getLength(); i++) {
+		    Node n = ele.getChildNodes().item(i);
+		    
+		    if (n instanceof Element) {
+		        XmpArray ary = parseRdfList((Element) n);
+	            schema.setProperty(propertyName, ary);
+	            hasElementChildren = true;
+		    }
+		}
+		
+		if (!hasElementChildren) {
+		    String value = ele.getTextContent();
+            schema.setProperty(propertyName, value);
 		}
 		
 		/* And attributes... */
