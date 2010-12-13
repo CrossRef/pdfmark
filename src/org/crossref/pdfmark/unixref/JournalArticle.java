@@ -116,18 +116,8 @@ public class JournalArticle {
 											     XPathConstants.NODE);
 
 		if (pubDate != null) {
-			Node year = (Node) YEAR_EXPR.evaluate(pubDate, XPathConstants.NODE);
-			Node month = (Node) MONTH_EXPR.evaluate(pubDate, XPathConstants.NODE);
-			Node day = (Node) DAY_EXPR.evaluate(pubDate, XPathConstants.NODE);
-
-			// TODO What if month and day are not two digits strings?
-			date = year.getTextContent();
-			if (month != null) {
-				date += "-" + month.getTextContent();
-				if (day != null) {
-					date += "-" + day.getTextContent();
-				}
-			}
+		    date = XPathHelpers.mapConcat(pubDate, "-", YEAR_EXPR, MONTH_EXPR, 
+		                                                DAY_EXPR);
 		}
 
 		return publishedDate = date;

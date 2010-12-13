@@ -1,5 +1,7 @@
 package org.crossref.pdfmark;
 
+import java.util.ArrayList;
+
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
@@ -12,6 +14,27 @@ public final class XPathHelpers {
             throws XPathExpressionException {
         Node inner = (Node) xpe.evaluate(n, XPathConstants.NODE);
         return inner == null ? "" : inner.getTextContent();
+    }
+    
+    public static String mapConcat(Node n, String delimiter, XPathExpression... exprs) 
+            throws XPathExpressionException {
+        ArrayList<String> results = new ArrayList<String>();
+        for (XPathExpression expr : exprs) {
+            results.add(orEmptyStr(expr, n));
+        }
+        
+        while (results.remove(""));
+        
+        String retn = "";
+        
+        for (String s : results) {
+            retn += s;
+            if (results.indexOf(s) != results.size() -1 ) {
+                retn += delimiter;
+            }
+        }
+        
+        return retn;
     }
     
 }
