@@ -22,6 +22,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.crossref.pdfmark.XPathHelpers;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -72,7 +73,7 @@ public class JournalArticle {
 		}
 		
 		NodeList ts = (NodeList) TITLES_EXPR.evaluate(articleNode, 
-				 									  XPathConstants.NODESET);
+							      XPathConstants.NODESET);
 
 		String[] strings = new String[ts.getLength()];
 
@@ -133,61 +134,31 @@ public class JournalArticle {
 	}
 	
 	public String getYear() throws XPathExpressionException {
-		if (publishedYear == null) {
-			Node date = (Node) DATE_EXPR.evaluate(articleNode, 
-											      XPathConstants.NODE);
-			
-			if (date != null) {
-				Node n = (Node) YEAR_EXPR.evaluate(date, XPathConstants.NODE);
-				publishedYear = n.getTextContent();
-			} else {
-				publishedYear = "";
-			}
-		}
-		return publishedYear;
+	    if (publishedYear == null) {
+            publishedYear = XPathHelpers.orEmptyStr(DATE_EXPR, articleNode);
+        }
+        return publishedYear;
 	}
 	
 	public String getFirstPage() throws XPathExpressionException {
-		if (firstPage != null) {
-			return firstPage;
-		}
-		
-		Node fpNode = (Node) FIRST_PAGE_EXPR.evaluate(articleNode,
-												      XPathConstants.NODE);
-		
-		if (fpNode != null) {
-			firstPage = fpNode.getTextContent();
-		}
-		
-		return firstPage;
+	    if (firstPage == null) {
+            firstPage = XPathHelpers.orEmptyStr(FIRST_PAGE_EXPR, articleNode);
+        }
+        return firstPage;
 	}
 	
 	public String getLastPage() throws XPathExpressionException {
-		if (lastPage != null) {
-			return lastPage;
-		}
-		
-		Node lpNode = (Node) LAST_PAGE_EXPR.evaluate(articleNode,
-												     XPathConstants.NODE);
-		
-		if (lpNode != null) {
-			lastPage = lpNode.getTextContent();
-		}
-		
-		return lastPage;
+	    if (lastPage == null) {
+            lastPage = XPathHelpers.orEmptyStr(LAST_PAGE_EXPR, articleNode);
+	    }
+        return lastPage;
 	}
 	
 	public String getDoi() throws XPathExpressionException {
 		if (doi == null) {
-			Node n = (Node) DOI_EXPR.evaluate(articleNode, XPathConstants.NODE);
-			
-			if (n != null) {
-				doi = n.getTextContent();
-			} else {
-				doi = "";
-			}
-		}
-		return doi;
+		    doi = XPathHelpers.orEmptyStr(DOI_EXPR, articleNode);
+        }
+        return doi;
 	}
 
 }

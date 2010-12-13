@@ -22,6 +22,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.crossref.pdfmark.XPathHelpers;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -100,68 +101,38 @@ public class Journal {
 	
 	public String getElectronicIssn() throws XPathExpressionException {
 		if (electronicIssn == null) {
-			Node n = (Node) ELECTRONIC_ISSN_EXPR.evaluate(journalNode, 
-														  XPathConstants.NODE);
-			
-			if (n != null) {
-				electronicIssn = n.getTextContent();
-			} else {
-				electronicIssn = "";
-			}
-		}
-		return electronicIssn;
+		    electronicIssn = XPathHelpers.orEmptyStr(ELECTRONIC_ISSN_EXPR, 
+		                                             journalNode);
+        }
+        return electronicIssn;
 	}
 	
 	public String getDoi() throws XPathExpressionException {
-		if (doi == null) {
-			Node n = (Node) DOI_EXPR.evaluate(journalNode, XPathConstants.NODE);
-			
-			if (n != null) {
-				doi = n.getTextContent();
-			} else {
-				doi = "";
-			}
-		}
-		return doi;
+	    if (doi == null) {
+            doi = XPathHelpers.orEmptyStr(DOI_EXPR, journalNode);
+        }
+        return doi;
 	}
 	
 	public String getVolume() throws XPathExpressionException {
 		if (volume == null) {
-			Node n = (Node) VOLUME_EXPR.evaluate(journalNode, XPathConstants.NODE);
-			
-			if (n != null) {
-				volume = n.getTextContent();
-			} else {
-				volume = "";
-			}
+		    volume = XPathHelpers.orEmptyStr(VOLUME_EXPR, journalNode);
 		}
 		return volume;
 	}
 	
 	public String getIssue() throws XPathExpressionException {
-		if (issue == null) {
-			Node n = (Node) ISSUE_EXPR.evaluate(journalNode, XPathConstants.NODE);
-			
-			if (n != null) {
-				issue = n.getTextContent();
-			} else {
-				issue = "";
-			}
-		}
-		return issue;
+	    if (issue == null) {
+	        issue = XPathHelpers.orEmptyStr(ISSUE_EXPR, journalNode);
+	    }
+	    return issue;
 	}
 	
 	public String getFullTitle() throws XPathExpressionException {
-		if (title == null) {
-			Node n = (Node) TITLE_EXPR.evaluate(journalNode, XPathConstants.NODE);
-			
-			if (n != null) {
-				title = n.getTextContent();
-			} else {
-				title = "";
-			}
-		}
-		return title;
+	    if (title == null) {
+            title = XPathHelpers.orEmptyStr(TITLE_EXPR, journalNode);
+        }
+        return title;
 	}
 
 }
