@@ -16,7 +16,7 @@ public final class XPathHelpers {
         return inner == null ? "" : inner.getTextContent();
     }
     
-    public static String mapConcat(Node n, String delimiter, XPathExpression... exprs) 
+    public static String evalConcat(Node n, String delimiter, XPathExpression... exprs) 
             throws XPathExpressionException {
         ArrayList<String> results = new ArrayList<String>();
         for (XPathExpression expr : exprs) {
@@ -35,6 +35,17 @@ public final class XPathHelpers {
         }
         
         return retn;
+    }
+    
+    public static Node oneOf(Node parent, XPathExpression... exprs) 
+            throws XPathExpressionException {
+        for (XPathExpression expr : exprs) {
+            Node child = (Node) expr.evaluate(parent, XPathConstants.NODE);
+            if (child != null) {
+                return child;
+            }
+        }
+        return null;
     }
     
 }

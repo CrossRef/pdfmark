@@ -29,14 +29,6 @@ import org.w3c.dom.NodeList;
 
 public class JournalArticle {
 	
-	private static XPathExpression TITLES_EXPR;
-	private static XPathExpression AUTHORS_EXPR;
-	private static XPathExpression GIVEN_NAME_EXPR;
-	private static XPathExpression SURNAME_EXPR;
-	private static XPathExpression DATE_EXPR;
-	private static XPathExpression DAY_EXPR;
-	private static XPathExpression MONTH_EXPR;
-	private static XPathExpression YEAR_EXPR;
 	private static XPathExpression DOI_EXPR;
 	private static XPathExpression FIRST_PAGE_EXPR;
 	private static XPathExpression LAST_PAGE_EXPR;
@@ -53,81 +45,34 @@ public class JournalArticle {
 		
 		XPath xpath = Unixref.getXPath(doc);
 		
-		TITLES_EXPR = xpath.compile("cr:titles/cr:title");
-		AUTHORS_EXPR = xpath.compile("cr:contributors/cr:person_name"
-				+ "[@contributor_role='author']");
-		GIVEN_NAME_EXPR = xpath.compile("cr:given_name");
-		SURNAME_EXPR = xpath.compile("cr:surname");
-		DATE_EXPR = xpath.compile("cr:publication_date");
-		DAY_EXPR = xpath.compile("cr:day");
-		MONTH_EXPR = xpath.compile("cr:month");
-		YEAR_EXPR = xpath.compile("cr:year");
 		DOI_EXPR = xpath.compile("cr:doi_data/cr:doi");
 		FIRST_PAGE_EXPR = xpath.compile("cr:pages/cr:first_page");
 		LAST_PAGE_EXPR = xpath.compile("cr:pages/cr:last_page");
 	}
 	
 	public String[] getTitles() throws XPathExpressionException {
-		if (titles != null) {
-			return titles;
+		if (titles == null) {
+		    titles = Unixref.getTitles(articleNode);
 		}
-		
-		NodeList ts = (NodeList) TITLES_EXPR.evaluate(articleNode, 
-							      XPathConstants.NODESET);
-
-		String[] strings = new String[ts.getLength()];
-
-		for (int i=0; i<ts.getLength(); i++) {
-			strings[i] = ts.item(i).getTextContent();
-		}
-
-		return titles = strings;
+		return titles;
 	}
 
 	public String[] getContributors() throws XPathExpressionException {
-		if (contributors != null) {
-			return contributors;
-		}
-		
-		NodeList s = (NodeList) AUTHORS_EXPR.evaluate(articleNode, 
-				  									  XPathConstants.NODESET);
-
-		String[] names = new String[s.getLength()];
-
-		for (int i=0; i<s.getLength(); i++) {
-			Node a = s.item(i);
-			Node given = (Node) GIVEN_NAME_EXPR.evaluate(a, XPathConstants.NODE);
-			Node surname = (Node) SURNAME_EXPR.evaluate(a, XPathConstants.NODE);
-			names[i] = given.getTextContent().trim() 
-					 + " " 
-					 + surname.getTextContent().trim();
-		}
-
-		return contributors = names;
-	}
-
+        if (contributors == null) {
+            contributors = Unixref.getContributors(articleNode);
+        }
+        return contributors;
+    }
+	
 	public String getDate() throws XPathExpressionException {
-		if (publishedDate != null) {
-			return publishedDate;
-		}
-		
-		String date = "";
-		Node pubDate = (Node) DATE_EXPR.evaluate(articleNode, 
-											     XPathConstants.NODE);
-
-		if (pubDate != null) {
-		    date = XPathHelpers.mapConcat(pubDate, "-", YEAR_EXPR, MONTH_EXPR, 
-		                                                DAY_EXPR);
-		}
-
-		return publishedDate = date;
+	    if (publishedDate == null) {
+	        publishedDate = Unixref.getPublicationDate(articleNode);
+	    }
+	    return publishedDate;
 	}
 	
 	public String getYear() throws XPathExpressionException {
-	    if (publishedYear == null) {
-            publishedYear = XPathHelpers.orEmptyStr(DATE_EXPR, articleNode);
-        }
-        return publishedYear;
+	    return Unixref.getPublicationYear(articleNode);
 	}
 	
 	public String getFirstPage() throws XPathExpressionException {
