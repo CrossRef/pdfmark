@@ -4,11 +4,18 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.crossref.pdfmark.DcPrismSet;
+import org.crossref.pdfmark.MarkBuilder;
 import org.crossref.pdfmark.XPathHelpers;
+import org.crossref.pdfmark.prism.Prism21Schema;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-public class Book {
+import com.lowagie.text.xml.xmp.DublinCoreSchema;
+import com.lowagie.text.xml.xmp.XmpSchema;
+import com.lowagie.text.xml.xmp.XmpWriter;
+
+public class Book extends Work{
     
     private static XPathExpression EDITION_NUMBER_EXPR;
     private static XPathExpression ISBN_EXPR;
@@ -94,6 +101,27 @@ public class Book {
             issn = XPathHelpers.orEmptyStr(ISSN_EXPR, mdNode);
         }
         return issn;
+    }
+    
+    public void writeXmp(DcPrismSet dcPrism) throws XPathExpressionException {
+        XmpSchema dc = dcPrism.getDc();
+        XmpSchema prism = dcPrism.getPrism();
+        
+        addToSchema(dc, DublinCoreSchema.CREATOR, getContributors());
+        addToSchema(dc, DublinCoreSchema.TITLE, getTitles());
+        addToSchema(dc, DublinCoreSchema.DATE, getPublicationDate());
+        addToSchema(dc, DublinCoreSchema.IDENTIFIER, "doi:" + getDoi());
+        
+        addToSchema(prism, Prism21Schema.PUBLICATION_DATE, getPublicationDate());
+        addToSchema(prism, Prism21Schema.DOI, "doi:" + getDoi());
+        addToSchema(prism, Prism21Schema.URL, MarkBuilder.getUrlForDoi(getDoi()));
+        addToSchema(prism, Prism21Schema.ISSUE_IDENTIFIER, "doi:" + getDoi());
+        addToSchema(prism, Prism21Schema.EDITION, getEditionNumber());
+        addToSchema(prism, Prism21Schema.ISBN, getIsbn());
+        addToSchema(prism, Prism21Schema.ISSN, getIssn());
+        
+        // TODO:
+        //addToSchema(prism, Prism21Schema.PUBLICATION_NAME, getFullTitle());
     }
 
 }

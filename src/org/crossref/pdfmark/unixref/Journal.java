@@ -22,11 +22,18 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.crossref.pdfmark.DcPrismSet;
+import org.crossref.pdfmark.MarkBuilder;
 import org.crossref.pdfmark.XPathHelpers;
+import org.crossref.pdfmark.prism.Prism21Schema;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-public class Journal {
+import com.lowagie.text.xml.xmp.DublinCoreSchema;
+import com.lowagie.text.xml.xmp.XmpSchema;
+import com.lowagie.text.xml.xmp.XmpWriter;
+
+public class Journal extends Work {
 	
 	private static XPathExpression JOURNAL_ARTICLE_EXPR;
 	private static XPathExpression PRINT_ISSN_EXPR;
@@ -133,6 +140,29 @@ public class Journal {
             title = XPathHelpers.orEmptyStr(TITLE_EXPR, journalNode);
         }
         return title;
+	}
+	
+	public void writeXmp(DcPrismSet dcPrism) throws XPathExpressionException {
+	    JournalArticle article = getArticle();
+	    XmpSchema dc = dcPrism.getDc();
+	    XmpSchema prism = dcPrism.getPrism();
+	    
+        addToSchema(dc, DublinCoreSchema.CREATOR, article.getContributors());
+        addToSchema(dc, DublinCoreSchema.TITLE, article.getTitles());
+        addToSchema(dc, DublinCoreSchema.DATE, article.getDate());
+        addToSchema(dc, DublinCoreSchema.IDENTIFIER, "doi:" + article.getDoi());
+        
+        addToSchema(prism, Prism21Schema.PUBLICATION_DATE, article.getDate());
+        addToSchema(prism, Prism21Schema.DOI, "doi:" + article.getDoi());
+        addToSchema(prism, Prism21Schema.ISSN, getPreferredIssn());
+        addToSchema(prism, Prism21Schema.E_ISSN, getElectronicIssn());
+        addToSchema(prism, Prism21Schema.ISSUE_IDENTIFIER, "doi:" + getDoi());
+        addToSchema(prism, Prism21Schema.PUBLICATION_NAME, getFullTitle());
+        addToSchema(prism, Prism21Schema.VOLUME, getVolume());
+        addToSchema(prism, Prism21Schema.NUMBER, getIssue());
+        addToSchema(prism, Prism21Schema.STARTING_PAGE, article.getFirstPage());
+        addToSchema(prism, Prism21Schema.ENDING_PAGE, article.getLastPage());
+        addToSchema(prism, Prism21Schema.URL, MarkBuilder.getUrlForDoi(article.getDoi()));
 	}
 
 }

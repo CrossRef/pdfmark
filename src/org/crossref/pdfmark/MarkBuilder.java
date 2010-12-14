@@ -29,6 +29,7 @@ import org.crossref.pdfmark.pub.Publisher;
 import org.crossref.pdfmark.unixref.Journal;
 import org.crossref.pdfmark.unixref.JournalArticle;
 import org.crossref.pdfmark.unixref.Unixref;
+import org.crossref.pdfmark.unixref.Work;
 
 import com.lowagie.text.xml.xmp.DublinCoreSchema;
 import com.lowagie.text.xml.xmp.XmpArray;
@@ -86,89 +87,62 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 		}
 		
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		DcPrismSet dcPrism = new DcPrismSet();
 		
 		try {
-			Journal journal = unixref.getJournal();
-			JournalArticle article = journal.getArticle();
-			
-			XmpWriter writer = new XmpWriter(bout);
-			
-			XmpSchema dc = new DublinCoreSchema();
-			addToSchema(dc, DublinCoreSchema.CREATOR, article.getContributors());
-			addToSchema(dc, DublinCoreSchema.TITLE, article.getTitles());
-			addToSchema(dc, DublinCoreSchema.DATE, article.getDate());
-			addToSchema(dc, DublinCoreSchema.IDENTIFIER, "doi:" + article.getDoi());
-			if (publisher != null) {
-				if (generateCopyright) {
-					addToSchema(dc, DublinCoreSchema.RIGHTS, getCopyright());
-				}
-				addToSchema(dc, DublinCoreSchema.PUBLISHER, publisher.getName());
-			}
-			writer.addRdfDescription(dc);
-			
-			XmpSchema prism = new Prism21Schema();
-			addToSchema(prism, Prism21Schema.PUBLICATION_DATE, article.getDate());
-			addToSchema(prism, Prism21Schema.DOI, "doi:" + article.getDoi());
-			addToSchema(prism, Prism21Schema.ISSN, journal.getPreferredIssn());
-			addToSchema(prism, Prism21Schema.E_ISSN, journal.getElectronicIssn());
-			addToSchema(prism, Prism21Schema.ISSUE_IDENTIFIER, journal.getDoi());
-			addToSchema(prism, Prism21Schema.PUBLICATION_NAME, journal.getFullTitle());
-			addToSchema(prism, Prism21Schema.VOLUME, journal.getVolume());
-			addToSchema(prism, Prism21Schema.NUMBER, journal.getIssue());
-			addToSchema(prism, Prism21Schema.STARTING_PAGE, article.getFirstPage());
-			addToSchema(prism, Prism21Schema.ENDING_PAGE, article.getLastPage());
-			addToSchema(prism, Prism21Schema.URL, getUrlForDoi(article.getDoi()));
-			addToSchema(prism, Prism21Schema.RIGHTS_AGENT, rightsAgent);
-			if (publisher != null && generateCopyright) {
-				addToSchema(prism, Prism21Schema.COPYRIGHT, getCopyright());
-			}
-			writer.addRdfDescription(prism);
-			
-			writer.close();
-			xmpData = bout.toByteArray();
-			
+		    XmpWriter writer = new XmpWriter(bout);
+		    
+		    switch (unixref.getType()) {
+	        case JOURNAL:
+	            unixref.getJournal().writeXmp(dcPrism);
+	            break;
+	        case BOOK:
+	            unixref.getBook().writeXmp(dcPrism);
+	            break;
+	        default:
+	            break;
+	        }
+		    
+		    if (publisher != null) {
+	            if (generateCopyright) {
+	                String cp = getCopyright();
+	                Work.addToSchema(dcPrism.getDc(), DublinCoreSchema.RIGHTS, cp);
+	                Work.addToSchema(dcPrism.getPrism(), Prism21Schema.COPYRIGHT, cp);
+	            }
+	            Work.addToSchema(dcPrism.getDc(), DublinCoreSchema.PUBLISHER, 
+	                             publisher.getName());
+	        }
+		    
+		    Work.addToSchema(dcPrism.getPrism(), Prism21Schema.RIGHTS_AGENT, 
+		                     rightsAgent);
+		    
+		    writer.addRdfDescription(dcPrism.getDc());
+		    writer.addRdfDescription(dcPrism.getPrism());
+		    writer.close();
+		    xmpData = bout.toByteArray();
 		} catch (IOException e) {
-			onFailure(requestedDoi, MetadataGrabber.CLIENT_EXCEPTION_CODE,
-					  e.toString());
-		} catch (XPathExpressionException e) {
-			onFailure(requestedDoi, MetadataGrabber.CLIENT_EXCEPTION_CODE,
-					  e.toString());
-		}
+            onFailure(requestedDoi, MetadataGrabber.CLIENT_EXCEPTION_CODE,
+                      e.toString());
+        } catch (XPathExpressionException e) {
+            onFailure(requestedDoi, MetadataGrabber.CLIENT_EXCEPTION_CODE,
+                      e.toString());
+        }
 	}
 	
-	private static void addToSchema(XmpSchema schema, String key, String val) {
-		if (val != null && !val.isEmpty()) {
-			schema.setProperty(key, val);
-		}
-	}
+	// TODO Make generic for work types.
+    private String getCopyright() throws XPathExpressionException {
+        return "(C) " + unixref.getJournal().getArticle().getYear() + " "
+                    + publisher.getName();
+    }
 	
-	private static String getUrlForDoi(String doi) {
-		return DOI_RESOLVER.resolve(doi).toString();
-	}
+	public static String getUrlForDoi(String doi) {
+        return DOI_RESOLVER.resolve(doi).toString();
+    }
 	
-	private String getCopyright() throws XPathExpressionException {
-		return "(C) " + unixref.getJournal().getArticle().getYear() + " "
-					+ publisher.getName();
-	}
 	
-	/**
-	 * Adds a list of values as a bag if the list size is greater than 1,
-	 * or as a single element if the list size is 1.
-	 */
-	private static void addToSchema(XmpSchema schema, String key, String[] vals) {
-		if (vals.length == 1) {
-			schema.setProperty(key, vals[0]);
-		} else if (vals.length > 1) {
-			XmpArray bag = new XmpArray(XmpArray.ORDERED);
-			for (String val : vals) {
-				bag.add(val);
-			}
-			schema.setProperty(key, bag);
-		}
-	}
 	
 	public byte[] getXmpData() {
-		return xmpData;
-	}
+        return xmpData;
+    }
 
 }
