@@ -7,8 +7,8 @@ import com.lowagie.text.xml.xmp.XmpSchema;
 
 public class DcPrismSet {
     
-    private XmpSchema prism = new DublinCoreSchema();
-    private XmpSchema dc = new Prism21Schema();
+    private XmpSchema dc = new DublinCoreSchema();
+    private XmpSchema prism = new Prism21Schema();
     
     public XmpSchema getPrism() {
         return prism;

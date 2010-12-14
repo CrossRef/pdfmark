@@ -26,14 +26,10 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.crossref.pdfmark.prism.Prism21Schema;
 import org.crossref.pdfmark.pub.Publisher;
-import org.crossref.pdfmark.unixref.Journal;
-import org.crossref.pdfmark.unixref.JournalArticle;
 import org.crossref.pdfmark.unixref.Unixref;
 import org.crossref.pdfmark.unixref.Work;
 
 import com.lowagie.text.xml.xmp.DublinCoreSchema;
-import com.lowagie.text.xml.xmp.XmpArray;
-import com.lowagie.text.xml.xmp.XmpSchema;
 import com.lowagie.text.xml.xmp.XmpWriter;
 
 public abstract class MarkBuilder implements MetadataGrabber.Handler {
@@ -74,51 +70,46 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 	
 	@Override
 	public void onComplete(String requestedDoi) {
-		try {
-			if (unixref.getType() != Unixref.Type.JOURNAL) {
-				onFailure(requestedDoi, MetadataGrabber.CRUMMY_XML_CODE,
-						"No journal article metadata for DOI.");
-				return;
-			}
-		} catch (XPathExpressionException e) {
-			onFailure(requestedDoi, MetadataGrabber.CRUMMY_XML_CODE,
-					"Could not determine if DOI has any journal article metadata.");
-			return;
-		}
-		
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		DcPrismSet dcPrism = new DcPrismSet();
 		
 		try {
-		    XmpWriter writer = new XmpWriter(bout);
+		    Work work = null;
 		    
 		    switch (unixref.getType()) {
 	        case JOURNAL:
-	            unixref.getJournal().writeXmp(dcPrism);
+	            work = unixref.getJournal();
 	            break;
 	        case BOOK:
-	            unixref.getBook().writeXmp(dcPrism);
+	            work = unixref.getBook();
 	            break;
 	        default:
 	            break;
 	        }
 		    
-		    if (publisher != null) {
-	            if (generateCopyright) {
-	                String cp = getCopyright();
-	                Work.addToSchema(dcPrism.getDc(), DublinCoreSchema.RIGHTS, cp);
-	                Work.addToSchema(dcPrism.getPrism(), Prism21Schema.COPYRIGHT, cp);
-	            }
-	            Work.addToSchema(dcPrism.getDc(), DublinCoreSchema.PUBLISHER, 
-	                             publisher.getName());
-	        }
+		    if (work != null) {
+		        XmpWriter writer = new XmpWriter(bout);
+		        
+		        work.writeXmp(dcPrism);
 		    
-		    Work.addToSchema(dcPrism.getPrism(), Prism21Schema.RIGHTS_AGENT, 
-		                     rightsAgent);
+    		    if (publisher != null) {
+    	            if (generateCopyright) {
+    	                String cp = getCopyright(work);
+    	                Work.addToSchema(dcPrism.getDc(), DublinCoreSchema.RIGHTS, cp);
+    	                Work.addToSchema(dcPrism.getPrism(), Prism21Schema.COPYRIGHT, cp);
+    	            }
+    	            Work.addToSchema(dcPrism.getDc(), DublinCoreSchema.PUBLISHER, 
+    	                             publisher.getName());
+    	        }
+    		    
+    		    Work.addToSchema(dcPrism.getPrism(), Prism21Schema.RIGHTS_AGENT, 
+    		                     rightsAgent);
+    		    
+    		    writer.addRdfDescription(dcPrism.getDc());
+                writer.addRdfDescription(dcPrism.getPrism());
+                writer.close();
+		    }
 		    
-		    writer.addRdfDescription(dcPrism.getDc());
-		    writer.addRdfDescription(dcPrism.getPrism());
-		    writer.close();
 		    xmpData = bout.toByteArray();
 		} catch (IOException e) {
             onFailure(requestedDoi, MetadataGrabber.CLIENT_EXCEPTION_CODE,
@@ -129,17 +120,13 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
         }
 	}
 	
-	// TODO Make generic for work types.
-    private String getCopyright() throws XPathExpressionException {
-        return "(C) " + unixref.getJournal().getArticle().getYear() + " "
-                    + publisher.getName();
+    private String getCopyright(Work work) throws XPathExpressionException {
+        return "(C) " + work.getYear() + " " + publisher.getName();
     }
 	
 	public static String getUrlForDoi(String doi) {
         return DOI_RESOLVER.resolve(doi).toString();
     }
-	
-	
 	
 	public byte[] getXmpData() {
         return xmpData;

@@ -13,7 +13,6 @@ import org.w3c.dom.Node;
 
 import com.lowagie.text.xml.xmp.DublinCoreSchema;
 import com.lowagie.text.xml.xmp.XmpSchema;
-import com.lowagie.text.xml.xmp.XmpWriter;
 
 public class Book extends Work{
     
@@ -28,7 +27,7 @@ public class Book extends Work{
     
     private String[] titles, contributors;
     
-    private String editionNumber, publicationDate, isbn, doi, issn;
+    private String editionNumber, publicationDate, isbn, doi, issn, year;
     
     private Node bookNode;
     
@@ -103,6 +102,13 @@ public class Book extends Work{
         return issn;
     }
     
+    public String getYear() throws XPathExpressionException {
+        if (year == null) {
+            year = Unixref.getPublicationYear(mdNode);
+        }
+        return year;
+    }
+    
     public void writeXmp(DcPrismSet dcPrism) throws XPathExpressionException {
         XmpSchema dc = dcPrism.getDc();
         XmpSchema prism = dcPrism.getPrism();
@@ -113,7 +119,7 @@ public class Book extends Work{
         addToSchema(dc, DublinCoreSchema.IDENTIFIER, "doi:" + getDoi());
         
         addToSchema(prism, Prism21Schema.PUBLICATION_DATE, getPublicationDate());
-        addToSchema(prism, Prism21Schema.DOI, "doi:" + getDoi());
+        addToSchema(prism, Prism21Schema.DOI, getDoi());
         addToSchema(prism, Prism21Schema.URL, MarkBuilder.getUrlForDoi(getDoi()));
         addToSchema(prism, Prism21Schema.ISSUE_IDENTIFIER, "doi:" + getDoi());
         addToSchema(prism, Prism21Schema.EDITION, getEditionNumber());

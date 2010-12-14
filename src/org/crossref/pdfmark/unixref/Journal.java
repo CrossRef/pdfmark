@@ -142,6 +142,10 @@ public class Journal extends Work {
         return title;
 	}
 	
+	public String getYear() throws XPathExpressionException {
+	    return getArticle().getYear();
+	}
+	
 	public void writeXmp(DcPrismSet dcPrism) throws XPathExpressionException {
 	    JournalArticle article = getArticle();
 	    XmpSchema dc = dcPrism.getDc();
@@ -153,10 +157,10 @@ public class Journal extends Work {
         addToSchema(dc, DublinCoreSchema.IDENTIFIER, "doi:" + article.getDoi());
         
         addToSchema(prism, Prism21Schema.PUBLICATION_DATE, article.getDate());
-        addToSchema(prism, Prism21Schema.DOI, "doi:" + article.getDoi());
+        addToSchema(prism, Prism21Schema.DOI, article.getDoi());
         addToSchema(prism, Prism21Schema.ISSN, getPreferredIssn());
         addToSchema(prism, Prism21Schema.E_ISSN, getElectronicIssn());
-        addToSchema(prism, Prism21Schema.ISSUE_IDENTIFIER, "doi:" + getDoi());
+        addToSchema(prism, Prism21Schema.ISSUE_IDENTIFIER, getDoi());
         addToSchema(prism, Prism21Schema.PUBLICATION_NAME, getFullTitle());
         addToSchema(prism, Prism21Schema.VOLUME, getVolume());
         addToSchema(prism, Prism21Schema.NUMBER, getIssue());

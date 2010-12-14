@@ -31,6 +31,8 @@ public abstract class Work {
         }
     }
     
+    public abstract String getYear() throws XPathExpressionException;
+    
     public abstract void writeXmp(DcPrismSet dcPrism) throws XPathExpressionException;
     
     
