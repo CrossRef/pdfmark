@@ -45,9 +45,9 @@ public class JournalArticle {
 		
 		XPath xpath = Unixref.getXPath(doc);
 		
-		DOI_EXPR = xpath.compile("cr:doi_data/cr:doi");
-		FIRST_PAGE_EXPR = xpath.compile("cr:pages/cr:first_page");
-		LAST_PAGE_EXPR = xpath.compile("cr:pages/cr:last_page");
+		DOI_EXPR = xpath.compile("doi_data/doi");
+		FIRST_PAGE_EXPR = xpath.compile("pages/first_page");
+		LAST_PAGE_EXPR = xpath.compile("pages/last_page");
 	}
 	
 	public String[] getTitles() throws XPathExpressionException {

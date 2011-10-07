@@ -14,7 +14,7 @@ import org.w3c.dom.Node;
 import com.lowagie.text.xml.xmp.DublinCoreSchema;
 import com.lowagie.text.xml.xmp.XmpSchema;
 
-public class Book extends Work{
+public class Book extends Work {
     
     private static XPathExpression EDITION_NUMBER_EXPR;
     private static XPathExpression ISBN_EXPR;
@@ -40,14 +40,14 @@ public class Book extends Work{
 
         XPath xpath = Unixref.getXPath(doc);
         
-        BOOK_META_EXPR = xpath.compile("cr:book_metadata");
-        BOOK_SET_META_EXPR = xpath.compile("cr:book_set_metadata");
-        BOOK_SERIES_META_EXPR = xpath.compile("cr:book_series_metadata");
+        BOOK_META_EXPR = xpath.compile("book_metadata");
+        BOOK_SET_META_EXPR = xpath.compile("book_set_metadata");
+        BOOK_SERIES_META_EXPR = xpath.compile("book_series_metadata");
         
-        EDITION_NUMBER_EXPR = xpath.compile("cr:edition_number");
-        DOI_EXPR = xpath.compile("cr:doi_data/cr:doi");
-        ISBN_EXPR = xpath.compile("cr:isbn");
-        ISSN_EXPR = xpath.compile("cr:issn");
+        EDITION_NUMBER_EXPR = xpath.compile("edition_number");
+        DOI_EXPR = xpath.compile("doi_data/doi");
+        ISBN_EXPR = xpath.compile("isbn");
+        ISSN_EXPR = xpath.compile("issn");
         
         mdNode = XPathHelpers.oneOf(bookNode, BOOK_META_EXPR, BOOK_SET_META_EXPR, 
                                     BOOK_SERIES_META_EXPR);

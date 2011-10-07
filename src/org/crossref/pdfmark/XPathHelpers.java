@@ -10,6 +10,9 @@ import org.w3c.dom.Node;
 
 public final class XPathHelpers {
     
+    private XPathHelpers() {
+    }
+    
     public static String orEmptyStr(XPathExpression xpe, Node n) 
             throws XPathExpressionException {
         Node inner = (Node) xpe.evaluate(n, XPathConstants.NODE);

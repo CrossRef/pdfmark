@@ -59,17 +59,17 @@ public class Journal extends Work {
 		
 		XPath xpath = Unixref.getXPath(doc);
 		
-		JOURNAL_ARTICLE_EXPR = xpath.compile("cr:journal_article");
-		PRINT_ISSN_EXPR = xpath.compile("cr:journal_metadata"
-				+ "/cr:issn[@media_type='print']");
-		ELECTRONIC_ISSN_EXPR = xpath.compile("cr:journal_metadata"
-				+ "/cr:issn[@media_type='electronic']");
-		ANY_ISSN_EXPR = xpath.compile("cr:journal_metadata"
-				+ "/cr:issn");
-		DOI_EXPR = xpath.compile("cr:journal_metadata/cr:doi_data/cr:doi");
-		TITLE_EXPR = xpath.compile("cr:journal_metadata/cr:full_title");
-		VOLUME_EXPR = xpath.compile("cr:journal_issue/cr:journal_volume/cr:volume");
-		ISSUE_EXPR = xpath.compile("cr:journal_issue/cr:issue");
+		JOURNAL_ARTICLE_EXPR = xpath.compile("journal_article");
+		PRINT_ISSN_EXPR = xpath.compile("journal_metadata"
+				+ "/issn[@media_type='print']");
+		ELECTRONIC_ISSN_EXPR = xpath.compile("journal_metadata"
+				+ "/issn[@media_type='electronic']");
+		ANY_ISSN_EXPR = xpath.compile("journal_metadata"
+				+ "/issn");
+		DOI_EXPR = xpath.compile("journal_metadata/doi_data/doi");
+		TITLE_EXPR = xpath.compile("journal_metadata/full_title");
+		VOLUME_EXPR = xpath.compile("journal_issue/journal_volume/volume");
+		ISSUE_EXPR = xpath.compile("journal_issue/issue");
 	}
 	
 	public JournalArticle getArticle() throws XPathExpressionException {
@@ -154,7 +154,7 @@ public class Journal extends Work {
         addToSchema(dc, DublinCoreSchema.CREATOR, article.getContributors());
         addToSchema(dc, DublinCoreSchema.TITLE, article.getTitles());
         addToSchema(dc, DublinCoreSchema.DATE, article.getDate());
-        addToSchema(dc, DublinCoreSchema.IDENTIFIER, "doi:" + article.getDoi());
+        addToSchema(dc, DublinCoreSchema.IDENTIFIER, article.getDoi());
         
         addToSchema(prism, Prism21Schema.PUBLICATION_DATE, article.getDate());
         addToSchema(prism, Prism21Schema.DOI, article.getDoi());

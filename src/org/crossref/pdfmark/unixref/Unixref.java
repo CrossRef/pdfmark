@@ -17,10 +17,6 @@
  */
 package org.crossref.pdfmark.unixref;
 
-import java.util.Iterator;
-
-import javax.xml.XMLConstants;
-import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -28,9 +24,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.crossref.pdfmark.XPathHelpers;
-import org.crossref.pdfmark.XmlUtils;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -45,10 +39,6 @@ public class Unixref {
 		STANDARD,
 		OTHER,
 	}
-	
-	private static final String NAMESPACE_PREFIX = "cr";
-	private static final String NAMESPACE_URI_10= "http://www.crossref.org/xschema/1.0";
-	private static final String NAMESPACE_URI_11 = "http://www.crossref.org/xschema/1.1";
 	
 	/* Work type */
 	private static XPathExpression JOURNAL_EXPR;
@@ -71,73 +61,40 @@ public class Unixref {
     private static XPathExpression GIVEN_NAME_EXPR;
     private static XPathExpression SURNAME_EXPR;
 	
-	private static XPath xpath;
+	private XPath xpath;
 	
 	private Document doc;
 	
 	private String ownerPrefix;
 	
-	// TODO Hard code doi_record namespaces so xpath expressions can be
-	// compiled per run.
 	public static XPath getXPath(Document doc) {
-		if (xpath == null) {
-			/* Attempt to determine the ns for the record element. */
-			Node rn = doc.getElementsByTagNameNS("*", "doi_record").item(0);
-			Element record = (Element) rn;
-			final String nsUri = XmlUtils.getNamespaceUriDeclaration(record);
-			
-			XPathFactory factory = XPathFactory.newInstance();
-			xpath = factory.newXPath();
-			xpath.setNamespaceContext(new NamespaceContext() {
-				@Override
-				public String getNamespaceURI(String prefix) {
-					if (prefix.equals(NAMESPACE_PREFIX)) {
-						return nsUri;
-					}
-					return XMLConstants.NULL_NS_URI;
-				}
-	
-				@Override
-				public String getPrefix(String namespaceURI) {
-					if (namespaceURI.equals(NAMESPACE_URI_10)
-							|| namespaceURI.equals(NAMESPACE_URI_11)) {
-						return NAMESPACE_PREFIX;
-					}
-					return null;
-				}
-	
-				@Override
-				public Iterator getPrefixes(String namespaceURI) {
-					return null;
-				}
-			});
-		}
+		XPathFactory factory = XPathFactory.newInstance();
+		XPath xpath = factory.newXPath();
 		return xpath;
 	}
 	
 	public Unixref(Document doc) throws XPathExpressionException {
 		this.doc = doc;
-		
-		getXPath(doc);
+		this.xpath = getXPath(doc);
 			
-		JOURNAL_EXPR = xpath.compile("//cr:journal");
-		BOOK_EXPR = xpath.compile("//cr:book");
-		DISSERTATION_EXPR = xpath.compile("//cr:dissertation");
-		CONFERENCE_EXPR = xpath.compile("//cr:conference");
-		REPORT_PAPER_EXPR = xpath.compile("//cr:report-paper");
-		STANDARD_EXPR = xpath.compile("//cr:standard");
-		OWNER_PREFIX_EXPR = xpath.compile("//cr:doi_record/@owner");
+		JOURNAL_EXPR = xpath.compile("//journal");
+		BOOK_EXPR = xpath.compile("//book");
+		DISSERTATION_EXPR = xpath.compile("//dissertation");
+		CONFERENCE_EXPR = xpath.compile("//conference");
+		REPORT_PAPER_EXPR = xpath.compile("//report-paper");
+		STANDARD_EXPR = xpath.compile("//standard");
+		OWNER_PREFIX_EXPR = xpath.compile("//doi_record/@owner");
 		
-		DATE_EXPR = xpath.compile("cr:publication_date");
-        DAY_EXPR = xpath.compile("cr:day");
-        MONTH_EXPR = xpath.compile("cr:month");
-        YEAR_EXPR = xpath.compile("cr:year");
+		DATE_EXPR = xpath.compile("publication_date");
+        DAY_EXPR = xpath.compile("day");
+        MONTH_EXPR = xpath.compile("month");
+        YEAR_EXPR = xpath.compile("year");
         
-        TITLES_EXPR = xpath.compile("cr:titles/cr:title");
-        AUTHORS_EXPR = xpath.compile("cr:contributors/cr:person_name"
+        TITLES_EXPR = xpath.compile("titles/title");
+        AUTHORS_EXPR = xpath.compile("contributors/person_name"
                 + "[@contributor_role='author']");
-        GIVEN_NAME_EXPR = xpath.compile("cr:given_name");
-        SURNAME_EXPR = xpath.compile("cr:surname");
+        GIVEN_NAME_EXPR = xpath.compile("given_name");
+        SURNAME_EXPR = xpath.compile("surname");
 	}
 	
 	public String getOwnerPrefix() throws XPathExpressionException {
