@@ -2,8 +2,8 @@ package org.crossref.pdfmark;
 
 import org.crossref.pdfmark.prism.Prism21Schema;
 
-import com.lowagie.text.xml.xmp.DublinCoreSchema;
-import com.lowagie.text.xml.xmp.XmpSchema;
+import com.itextpdf.text.xml.xmp.DublinCoreSchema;
+import com.itextpdf.text.xml.xmp.XmpSchema;
 
 public class DcPrismSet {
     

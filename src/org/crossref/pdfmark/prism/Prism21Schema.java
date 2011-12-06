@@ -17,7 +17,7 @@
  */
 package org.crossref.pdfmark.prism;
 
-import com.lowagie.text.xml.xmp.XmpSchema;
+import com.itextpdf.text.xml.xmp.XmpSchema;
 
 public class Prism21Schema extends XmpSchema {
 	

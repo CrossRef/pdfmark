@@ -3,10 +3,9 @@ package org.crossref.pdfmark.unixref;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.crossref.pdfmark.DcPrismSet;
-import org.w3c.dom.Node;
 
-import com.lowagie.text.xml.xmp.XmpArray;
-import com.lowagie.text.xml.xmp.XmpSchema;
+import com.itextpdf.text.xml.xmp.XmpArray;
+import com.itextpdf.text.xml.xmp.XmpSchema;
 
 public abstract class Work {
     

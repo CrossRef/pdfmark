@@ -29,9 +29,9 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.pdfparser.PDFParser;
 
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.pdf.PdfReader;
-import com.lowagie.text.pdf.PdfStamper;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.pdf.PdfReader;
+import com.itextpdf.text.pdf.PdfStamper;
 
 import static jargs.gnu.CmdLineParser.Option;
 
@@ -204,7 +204,12 @@ public class Main {
 				}
 				
 				if (resolvedXmpData != null) {
+				    System.out.println("Merging resolved.");
+				    System.out.println(resolvedXmpData);
+				    System.out.println(merged);
+				    System.out.println(resolvedXmpData.length);
 					merged = XmpUtils.mergeXmp(merged, resolvedXmpData);
+					System.out.println(merged.length);
 				}
 				
 				stamper.setXmpMetadata(merged);

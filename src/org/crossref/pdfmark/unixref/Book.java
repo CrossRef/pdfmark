@@ -11,8 +11,8 @@ import org.crossref.pdfmark.prism.Prism21Schema;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-import com.lowagie.text.xml.xmp.DublinCoreSchema;
-import com.lowagie.text.xml.xmp.XmpSchema;
+import com.itextpdf.text.xml.xmp.DublinCoreSchema;
+import com.itextpdf.text.xml.xmp.XmpSchema;
 
 public class Book extends Work {
     

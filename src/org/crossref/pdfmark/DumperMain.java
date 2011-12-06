@@ -2,13 +2,12 @@ package org.crossref.pdfmark;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import com.lowagie.text.pdf.PdfReader;
+import com.itextpdf.text.pdf.PdfReader;
 
 /**
  * Utility that dumps XMP data of a PDF to standard out.

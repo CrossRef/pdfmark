@@ -11,7 +11,7 @@ import org.crossref.pdfmark.XmpUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.lowagie.text.pdf.PdfStamper;
+import com.itextpdf.text.pdf.PdfStamper;
 import static org.junit.Assert.*;
 
 /**

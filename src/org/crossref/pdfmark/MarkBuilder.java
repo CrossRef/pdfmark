@@ -29,8 +29,8 @@ import org.crossref.pdfmark.pub.Publisher;
 import org.crossref.pdfmark.unixref.Unixref;
 import org.crossref.pdfmark.unixref.Work;
 
-import com.lowagie.text.xml.xmp.DublinCoreSchema;
-import com.lowagie.text.xml.xmp.XmpWriter;
+import com.itextpdf.text.xml.xmp.DublinCoreSchema;
+import com.itextpdf.text.xml.xmp.XmpWriter;
 
 public abstract class MarkBuilder implements MetadataGrabber.Handler {
 

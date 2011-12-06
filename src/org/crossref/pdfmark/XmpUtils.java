@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import javax.sql.rowset.spi.XmlWriter;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -35,10 +36,10 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
-import com.lowagie.text.xml.xmp.XmpArray;
-import com.lowagie.text.xml.xmp.XmpReader;
-import com.lowagie.text.xml.xmp.XmpSchema;
-import com.lowagie.text.xml.xmp.XmpWriter;
+import com.itextpdf.text.xml.xmp.XmpArray;
+import com.itextpdf.text.xml.xmp.XmpReader;
+import com.itextpdf.text.xml.xmp.XmpSchema;
+import com.itextpdf.text.xml.xmp.XmpWriter;
 
 public class XmpUtils {
 	
@@ -136,33 +137,68 @@ public class XmpUtils {
 	 * contain description blocks with the same namespace.
 	 */
 	public static byte[] mergeXmp(byte[] left, byte[] right) throws XmpException {
-		if (left == null || left.length == 0) return right;
-		if (right == null || right.length == 0) return left;
+		if (left == null || left.length == 0) {
+		    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		    try {
+    		    XmpWriter writer = new XmpWriter(bout);
+    		    for (XmpSchema schema : parseSchemata(right)) {
+    		        writer.addRdfDescription(schema);
+    		    }
+    		    writer.close();
+		    } catch (IOException e) {
+		        throw new XmpException(e);
+		    }
+		    return bout.toByteArray();
+		}
+		
+		if (right == null || right.length == 0) {
+		    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+            try {
+                XmpWriter writer = new XmpWriter(bout);
+                for (XmpSchema schema : parseSchemata(left)) {
+                    writer.addRdfDescription(schema);
+                }
+                writer.close();
+            } catch (IOException e) {
+                throw new XmpException(e);
+            }
+            return bout.toByteArray();
+		}
 		
 		XmpSchema[] leftSchemata = parseSchemata(left);
 		XmpSchema[] rightSchemata = parseSchemata(right);
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		
 		String[] noWriteList = new String[rightSchemata.length];
+		System.out.println(rightSchemata.length);
 		for (int i=0; i<noWriteList.length; i++) {
 			noWriteList[i] = rightSchemata[i].getXmlns();
+			System.out.println(rightSchemata[i].getXmlns());
 		}
+		
+		System.out.println("----");
 		
 		try {
 			XmpWriter writer = new XmpWriter(bout);
 			for (XmpSchema schema : leftSchemata) {
+			    System.out.println(schema.getXmlns());
 				boolean found = false;
 				for (String checkAgainst : noWriteList) {
-					if (schema.getXmlns().equals(checkAgainst)) {
-						found = true;
-						break;
-					}
-				}
+			        if (schema.getXmlns().equals(checkAgainst)) {
+			            found = true;
+			            break;
+			        }
+			    }
+				
 				if (!found) {
+				    System.out.println("Adding exisitng");
 					writer.addRdfDescription(schema);
+				} else {
+				    System.out.println("Ignoring existing");
 				}
 			}
 			for (XmpSchema schema : rightSchemata) {
+			    System.out.println("Adding new " + schema.getXmlns());
 				writer.addRdfDescription(schema);
 			}
 			writer.close();
