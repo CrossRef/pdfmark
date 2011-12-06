@@ -204,12 +204,7 @@ public class Main {
 				}
 				
 				if (resolvedXmpData != null) {
-				    System.out.println("Merging resolved.");
-				    System.out.println(resolvedXmpData);
-				    System.out.println(merged);
-				    System.out.println(resolvedXmpData.length);
 					merged = XmpUtils.mergeXmp(merged, resolvedXmpData);
-					System.out.println(merged.length);
 				}
 				
 				stamper.setXmpMetadata(merged);

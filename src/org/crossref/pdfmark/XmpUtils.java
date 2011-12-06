@@ -170,18 +170,13 @@ public class XmpUtils {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		
 		String[] noWriteList = new String[rightSchemata.length];
-		System.out.println(rightSchemata.length);
 		for (int i=0; i<noWriteList.length; i++) {
 			noWriteList[i] = rightSchemata[i].getXmlns();
-			System.out.println(rightSchemata[i].getXmlns());
 		}
-		
-		System.out.println("----");
 		
 		try {
 			XmpWriter writer = new XmpWriter(bout);
 			for (XmpSchema schema : leftSchemata) {
-			    System.out.println(schema.getXmlns());
 				boolean found = false;
 				for (String checkAgainst : noWriteList) {
 			        if (schema.getXmlns().equals(checkAgainst)) {
@@ -191,14 +186,10 @@ public class XmpUtils {
 			    }
 				
 				if (!found) {
-				    System.out.println("Adding exisitng");
 					writer.addRdfDescription(schema);
-				} else {
-				    System.out.println("Ignoring existing");
 				}
 			}
 			for (XmpSchema schema : rightSchemata) {
-			    System.out.println("Adding new " + schema.getXmlns());
 				writer.addRdfDescription(schema);
 			}
 			writer.close();
