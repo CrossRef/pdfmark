@@ -17,6 +17,8 @@
  */
 package org.crossref.pdfmark;
 
+import java.util.UUID;
+
 import javax.xml.XMLConstants;
 
 import org.w3c.dom.Attr;
@@ -32,19 +34,43 @@ public final class XmlUtils {
 	 * @return A String[] of length two, [prefix, URI].
 	 */
 	public static String[] getNamespaceDeclaration(Element ele) {
-		String[] ns = new String[2]; // prefix, URI
+		String prefixHint = null;
+		String[] parts = ele.getNodeName().split(":");
+		if (parts.length == 2) {
+			prefixHint = parts[0];
+		}
 		
+		return getNamespaceDeclaration(ele, prefixHint);
+	}
+	
+	/**
+	 * @return A String[] of length two, [prefix, URI].
+	 */
+	public static String[] getNamespaceDeclaration(Element ele, String prefixHint) {
+		String[] ns = new String[2]; // prefix, URI
 		NamedNodeMap attribs = ele.getAttributes();
 		
 		for (int i=0; i<attribs.getLength(); i++) {
 			Attr attr = (Attr) attribs.item(i);
 			if (attr.getName().startsWith("xmlns")) {
-				ns[0] = attr.getLocalName(); // prefix
-				ns[1] = attr.getTextContent(); // URI
+				if ((prefixHint != null && attr.getName().endsWith(prefixHint))
+						|| attr.getName().equals("xmlns")) {
+					ns[0] = attr.getLocalName(); // prefix
+					ns[1] = attr.getTextContent(); // URI
+				
+					// catch default namespace change
+					if (ns[0] == "xmlns") {
+						ns[0] = UUID.randomUUID().toString();
+					}
+				}
 			}
 		}
 		
-		return ns;
+		if (ns[1] == null) {
+			return getNamespaceDeclaration((Element) ele.getParentNode(), prefixHint);
+		} else {
+			return ns;
+		}
 	}
 	
 	public static String getNamespaceUriDeclaration(Element ele) {

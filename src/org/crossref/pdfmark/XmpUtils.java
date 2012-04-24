@@ -20,6 +20,10 @@ package org.crossref.pdfmark;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.sql.rowset.spi.XmlWriter;
 import javax.xml.XMLConstants;
@@ -58,7 +62,7 @@ public class XmpUtils {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			factory.setNamespaceAware(true);
 			DocumentBuilder builder = factory.newDocumentBuilder();
-			doc = builder.parse(new ByteArrayInputStream(xmpData));
+			doc = builder.parse(new ByteArrayInputStream(xmlData));
 		} catch (IOException e) {
 			throw new XmpException(e);
 		} catch (SAXException e) {
@@ -68,28 +72,34 @@ public class XmpUtils {
 		}
 		
 		NodeList descriptionNodes = doc.getElementsByTagName("rdf:Description");
-		XmpSchema[] schemata = new XmpSchema[descriptionNodes.getLength()];
+		Map<String, XmpSchema> schemata = new HashMap<String, XmpSchema>();
 		
 		for (int i=0; i<descriptionNodes.getLength(); i++) {
 			Element description = (Element) descriptionNodes.item(i);
 			NodeList children = description.getChildNodes();
 			
-			String[] ns = XmlUtils.getNamespaceDeclaration(description);
-			schemata[i] = new AnyXmpSchema(ns[0], ns[1]);
-			
 			for (int j=0; j<children.getLength(); j++) {
 				Node n = children.item(j);
 				if (n instanceof Element) {
-					parseRdfElement(schemata[i], (Element) n);
+					parseRdfElement(schemata, (Element) n);
 				}
 			}
 		}
 		
-		return schemata;
+		return schemata.values().toArray(new XmpSchema[0]);
 	}
 	
-	private static void parseRdfElement(XmpSchema schema, Element ele) {
+	private static void parseRdfElement(Map<String, XmpSchema> schemata, Element ele) {
 		String propertyName = ele.getNodeName();
+		String[] ns = XmlUtils.getNamespaceDeclaration(ele);
+		XmpSchema schema = null;
+		
+		if (schemata.containsKey(ns[1])) {
+			schema = schemata.get(ns[1]);
+		} else {
+			schema = new AnyXmpSchema(ns[0], ns[1]);
+			schemata.put(ns[1], schema);
+		}
 		
 		/* Should have either Text or a single <rdf:Bag/Alt/Seq>. */
 		boolean hasElementChildren = false;
