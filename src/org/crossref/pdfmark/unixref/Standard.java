@@ -4,7 +4,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.crossref.pdfmark.DcPrismSet;
+import org.crossref.pdfmark.SchemaSet;
 import org.crossref.pdfmark.XPathHelpers;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -73,7 +73,7 @@ public class Standard extends Work {
     }
     
     @Override
-    public void writeXmp(DcPrismSet dcPrism) throws XPathExpressionException {
+    public void writeXmp(SchemaSet dcPrism) throws XPathExpressionException {
         // TODO Auto-generated method stub
         
     }

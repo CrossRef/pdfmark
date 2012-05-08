@@ -2,7 +2,7 @@ package org.crossref.pdfmark.unixref;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import org.crossref.pdfmark.DcPrismSet;
+import org.crossref.pdfmark.SchemaSet;
 
 import com.itextpdf.text.xml.xmp.XmpArray;
 import com.itextpdf.text.xml.xmp.XmpSchema;
@@ -31,7 +31,7 @@ public abstract class Work {
         }
     }
     
-    public abstract void writeXmp(DcPrismSet dcPrism) throws XPathExpressionException;
+    public abstract void writeXmp(SchemaSet schemaSet) throws XPathExpressionException;
     
     public abstract String getYear() throws XPathExpressionException;
 

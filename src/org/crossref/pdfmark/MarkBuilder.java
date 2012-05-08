@@ -71,7 +71,7 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 	@Override
 	public void onComplete(String requestedDoi) {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		DcPrismSet dcPrism = new DcPrismSet();
+		SchemaSet schemaSet = new SchemaSet();
 		
 		try {
 		    Work work = null;
@@ -90,23 +90,23 @@ public abstract class MarkBuilder implements MetadataGrabber.Handler {
 		    if (work != null) {
 		        XmpWriter writer = new XmpWriter(bout);
 		        
-		        work.writeXmp(dcPrism);
+		        work.writeXmp(schemaSet);
 		    
     		    if (publisher != null) {
     	            if (generateCopyright) {
     	                String cp = getCopyright(work);
-    	                Work.addToSchema(dcPrism.getDc(), DublinCoreSchema.RIGHTS, cp);
-    	                Work.addToSchema(dcPrism.getPrism(), Prism21Schema.COPYRIGHT, cp);
+    	                Work.addToSchema(schemaSet.getDc(), DublinCoreSchema.RIGHTS, cp);
+    	                Work.addToSchema(schemaSet.getPrism(), Prism21Schema.COPYRIGHT, cp);
     	            }
-    	            Work.addToSchema(dcPrism.getDc(), DublinCoreSchema.PUBLISHER, 
+    	            Work.addToSchema(schemaSet.getDc(), DublinCoreSchema.PUBLISHER, 
     	                             publisher.getName());
     	        }
     		    
-    		    Work.addToSchema(dcPrism.getPrism(), Prism21Schema.RIGHTS_AGENT, 
+    		    Work.addToSchema(schemaSet.getPrism(), Prism21Schema.RIGHTS_AGENT, 
     		                     rightsAgent);
     		    
-    		    writer.addRdfDescription(dcPrism.getDc());
-                writer.addRdfDescription(dcPrism.getPrism());
+    		    writer.addRdfDescription(schemaSet.getDc());
+                writer.addRdfDescription(schemaSet.getPrism());
                 writer.close();
 		    }
 		    

@@ -4,7 +4,8 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.crossref.pdfmark.DcPrismSet;
+import org.crossref.pdfmark.PdfxSchema;
+import org.crossref.pdfmark.SchemaSet;
 import org.crossref.pdfmark.MarkBuilder;
 import org.crossref.pdfmark.XPathHelpers;
 import org.crossref.pdfmark.prism.Prism21Schema;
@@ -109,22 +110,25 @@ public class Book extends Work {
         return year;
     }
     
-    public void writeXmp(DcPrismSet dcPrism) throws XPathExpressionException {
-        XmpSchema dc = dcPrism.getDc();
-        XmpSchema prism = dcPrism.getPrism();
+    public void writeXmp(SchemaSet schemaSet) throws XPathExpressionException {
+        XmpSchema dc = schemaSet.getDc();
+        XmpSchema prism = schemaSet.getPrism();
+        XmpSchema pdfx = schemaSet.getPdfx();
         
         addToSchema(dc, DublinCoreSchema.CREATOR, getContributors());
         addToSchema(dc, DublinCoreSchema.TITLE, getTitles());
         addToSchema(dc, DublinCoreSchema.DATE, getPublicationDate());
-        addToSchema(dc, DublinCoreSchema.IDENTIFIER, "doi:" + getDoi());
+        addToSchema(dc, DublinCoreSchema.IDENTIFIER, getDoi());
         
         addToSchema(prism, Prism21Schema.PUBLICATION_DATE, getPublicationDate());
         addToSchema(prism, Prism21Schema.DOI, getDoi());
         addToSchema(prism, Prism21Schema.URL, MarkBuilder.getUrlForDoi(getDoi()));
-        addToSchema(prism, Prism21Schema.ISSUE_IDENTIFIER, "doi:" + getDoi());
+        addToSchema(prism, Prism21Schema.ISSUE_IDENTIFIER, getDoi());
         addToSchema(prism, Prism21Schema.EDITION, getEditionNumber());
         addToSchema(prism, Prism21Schema.ISBN, getIsbn());
         addToSchema(prism, Prism21Schema.ISSN, getIssn());
+        
+        addToSchema(pdfx, PdfxSchema.DOI, getDoi());
         
         // TODO:
         //addToSchema(prism, Prism21Schema.PUBLICATION_NAME, getFullTitle());

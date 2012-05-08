@@ -22,7 +22,8 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.crossref.pdfmark.DcPrismSet;
+import org.crossref.pdfmark.PdfxSchema;
+import org.crossref.pdfmark.SchemaSet;
 import org.crossref.pdfmark.MarkBuilder;
 import org.crossref.pdfmark.XPathHelpers;
 import org.crossref.pdfmark.prism.Prism21Schema;
@@ -146,10 +147,11 @@ public class Journal extends Work {
 	    return getArticle().getYear();
 	}
 	
-	public void writeXmp(DcPrismSet dcPrism) throws XPathExpressionException {
+	public void writeXmp(SchemaSet schemaSet) throws XPathExpressionException {
 	    JournalArticle article = getArticle();
-	    XmpSchema dc = dcPrism.getDc();
-	    XmpSchema prism = dcPrism.getPrism();
+	    XmpSchema dc = schemaSet.getDc();
+	    XmpSchema prism = schemaSet.getPrism();
+	    XmpSchema pdfx = schemaSet.getPdfx();
 	    
         addToSchema(dc, DublinCoreSchema.CREATOR, article.getContributors());
         addToSchema(dc, DublinCoreSchema.TITLE, article.getTitles());
@@ -167,6 +169,8 @@ public class Journal extends Work {
         addToSchema(prism, Prism21Schema.STARTING_PAGE, article.getFirstPage());
         addToSchema(prism, Prism21Schema.ENDING_PAGE, article.getLastPage());
         addToSchema(prism, Prism21Schema.URL, MarkBuilder.getUrlForDoi(article.getDoi()));
+        
+        addToSchema(pdfx, PdfxSchema.DOI, article.getDoi());
 	}
 
 }

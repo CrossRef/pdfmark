@@ -22,16 +22,22 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Map.Entry;
 
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSDocument;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSObject;
+import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.pdfparser.PDFParser;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfStamper;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.xml.xmp.XmpSchema;
 
 import static jargs.gnu.CmdLineParser.Option;
 
@@ -192,8 +198,10 @@ public class Main {
 			}
 			
 			try {
+				new File(outputFile.getPath() + ".tmp").deleteOnExit();
+				
 				FileInputStream fileIn = new FileInputStream(pdfFile);
-				FileOutputStream fileOut = new FileOutputStream(outputFile);
+				FileOutputStream fileOut = new FileOutputStream(outputFile.getPath() + ".tmp");
 				PdfReader reader = new PdfReader(fileIn);
 				PdfStamper stamper = new PdfStamper(reader, fileOut);
 				
@@ -206,11 +214,14 @@ public class Main {
 				if (resolvedXmpData != null) {
 					merged = XmpUtils.mergeXmp(merged, resolvedXmpData);
 				}
-				
+
 				stamper.setXmpMetadata(merged);
 				
 				stamper.close();
 				reader.close();
+				
+				fileIn = new FileInputStream(outputFile.getPath() + ".tmp");
+				writeInfoDictionary(fileIn, outputFile.getPath(), merged);
 			} catch (IOException e) {
 				exitWithError(2, "Error: Couldn't handle '" + pdfFilePath 
 						+ "' because of:\n" + e);
@@ -220,10 +231,31 @@ public class Main {
 			} catch (XmpException e) {
 				exitWithError(2, "Error: Couldn't handle '" + pdfFilePath
 						+ "' because of:\n" + e);
+			} catch (COSVisitorException e) {
+				exitWithError(2, "Error: Couldn't write document info dictionary"
+						+ " because of:\n" + e);
 			}
 		}
 		
 		shutDown();
+	}
+	
+	public static void writeInfoDictionary(FileInputStream in, 
+			String outputFile, byte[] xmp) throws IOException, COSVisitorException {
+	
+		PDFParser parser = new PDFParser(in);
+		parser.parse();
+	
+		PDDocument document = parser.getPDDocument();
+		PDDocumentInformation info = document.getDocumentInformation();
+		
+		for (Entry<String, String> entry : XmpUtils.toInfo(xmp).entrySet()) {
+			info.setCustomMetadataValue(entry.getKey(), entry.getValue());
+		}
+		
+		document.setDocumentInformation(info);
+		document.save(outputFile);
+		document.close();
 	}
 	
 	/**

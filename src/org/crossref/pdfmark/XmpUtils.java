@@ -20,10 +20,12 @@ package org.crossref.pdfmark;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream.GetField;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.sql.rowset.spi.XmlWriter;
 import javax.xml.XMLConstants;
@@ -32,6 +34,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -40,6 +43,8 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
+import com.itextpdf.text.pdf.PdfReader;
+import com.itextpdf.text.pdf.PdfStamper;
 import com.itextpdf.text.xml.xmp.XmpArray;
 import com.itextpdf.text.xml.xmp.XmpReader;
 import com.itextpdf.text.xml.xmp.XmpSchema;
@@ -208,4 +213,57 @@ public class XmpUtils {
 			throw new XmpException(e);
 		}
 	}
+	
+	/**
+	 * Copy key value pairs from PDFX namespace into a PDF's document information
+	 * dictionary.
+	 */
+	public static Map<String, String> toInfo(byte[] xmp) throws XmpException {
+		try {
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			factory.setNamespaceAware(true);
+			
+			Map<String, String> info = new HashMap<String, String>();
+			
+			XmpSchema[] schemata = XmpUtils.parseSchemata(xmp);
+			for (XmpSchema schema : schemata) {
+				if (schema.getXmlns().contains("pdfx")) {
+					for (Entry<Object, Object> entry : schema.entrySet()) {
+						Object value = entry.getValue();
+						
+						String key = (String) entry.getKey();
+						String[] parts = key.split(":");
+						String infoKey = parts.length == 2 ? parts[1] : parts[0];
+						
+						String val = (String) entry.getValue();
+						
+						if (val.contains("<rdf:Seq>") || val.contains("<rdf:Bag>")) {
+							val = "<xml xmlns:rdf=\"rdf\">" + val + "</xml>";
+							DocumentBuilder builder = factory.newDocumentBuilder();
+							Document doc = builder.parse(new ByteArrayInputStream(val.getBytes()));
+							
+							NodeList nodes = doc.getElementsByTagName("rdf:li");
+							for (int i=0; i<nodes.getLength(); i++) {
+								Element item = (Element) nodes.item(i);
+								info.put(infoKey + "[" + (i + 1) + "]", item.getTextContent());
+							}
+						} else {
+							info.put(infoKey, (String) value);
+						}
+					}
+				}
+			}
+			
+			return info;
+		} catch (DOMException e) {
+			throw new XmpException(e);
+		} catch (IOException e) {
+			throw new XmpException(e);
+		} catch (SAXException e) {
+			throw new XmpException(e);
+		} catch (ParserConfigurationException e) {
+			throw new XmpException(e);
+		}
+	}
+	
 }
