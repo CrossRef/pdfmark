@@ -237,7 +237,8 @@ public class XmpUtils {
 						
 						String val = (String) entry.getValue();
 						
-						if (val.contains("<rdf:Seq>") || val.contains("<rdf:Bag>")) {
+						if (val.toLowerCase().contains("<rdf:seq>") 
+								|| val.toLowerCase().contains("<rdf:bag>")) {
 							val = "<xml xmlns:rdf=\"rdf\">" + val + "</xml>";
 							DocumentBuilder builder = factory.newDocumentBuilder();
 							Document doc = builder.parse(new ByteArrayInputStream(val.getBytes()));
