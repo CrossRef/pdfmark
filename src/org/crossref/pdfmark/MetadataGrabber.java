@@ -29,6 +29,9 @@ import javax.xml.xpath.XPathExpressionException;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
+import org.apache.http.params.HttpParams;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -164,8 +167,12 @@ public class MetadataGrabber {
 			System.err.println(e);
 			System.exit(2);
 		}
+
+		HttpParams httpParams = new BasicHttpParams();
+		HttpConnectionParams.setConnectionTimeout(httpParams, 10000);
+		HttpConnectionParams.setSoTimeout(httpParams, 10000);
 		
-		client = new DefaultHttpClient();
+		client = new DefaultHttpClient(httpParams);
 		requests = new LinkedList<RequestInfo>();
 		
 		new Thread(new Runnable() {
