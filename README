@@ -1,0 +1,26 @@
+## pdfmark
+
+*2018/01/15:*  `pdfmark` is not working with Java 9. You must use 8 or below. 
+=====================================================
+
+Extended test data (in the form of lots of PDFs)
+can be inserted as a git submodule. You will need
+git access on labs.crossref.org to access the
+PDF test data repository. If you do, just perform
+this command to put the data into your local
+repository:
+
+$ git submodule update --init
+
+=====================================================
+To run with Docker
+
+- `docker build -t pdfmark .`
+- `docker run -v /tmp:/out pdfmark`
+
+You should find a file named '/tmp/test-pdf_xmp.pdf'
+
+You can see the metadata that has been added by using the `exiftool` like this:
+
+
+`exiftool -a -G1 /tmp/test-pdf_xmp.pdf`
