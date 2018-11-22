@@ -14,7 +14,7 @@
 		<mkdir dir="${classes.dir}"/>
 		
 		<javac srcdir="${src.dir}"
-				destdir="${classes.dir}">
+				destdir="${classes.dir}" source="1.7" target="1.7">
 			<classpath>
 				<fileset dir="${lib.dir}" includes="*.jar"/>
 			</classpath>
